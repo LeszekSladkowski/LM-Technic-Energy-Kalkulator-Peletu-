@@ -1,0 +1,4 @@
+L&M Technic Energy — Europejski Kalkulator Peletu 1.0
+Wersja z finalną ikoną.
+
+Ikona aplikacji została utworzona dokładnie z grafiki przesłanej przez użytkownika 15.08.2026. Nie zmieniono projektu, treści ani układu grafiki. Wygenerowano wyłącznie techniczne rozmiary 192x192 i 512x512 wymagane przez PWA.
