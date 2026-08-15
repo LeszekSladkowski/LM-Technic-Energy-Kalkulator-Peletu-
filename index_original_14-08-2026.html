@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07100b">
+<title>L&M Technic Energy — Europejski Kalkulator Peletu 1.0</title>
+<style>
+:root{--bg:#040806;--panel:#0a120e;--panel2:#0d1812;--line:#2a402d;--gold:#e8a51b;--green:#77d735;--text:#eef2ed;--muted:#9aa69d;--red:#ef493d;--blue:#4ca9e8}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 50% -20%,#17331e 0,#050a07 46%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+body{min-height:100vh}.app{max-width:1540px;margin:auto;padding:10px}
+.top{border:1px solid #304934;border-radius:12px;background:linear-gradient(180deg,#0b1510,#060b08);padding:12px}
+.brand{display:flex;align-items:center;gap:15px}.logo{font-weight:900;font-size:30px;line-height:.78;letter-spacing:-1px}.logo small{font-size:14px;letter-spacing:2px;color:#7bd438}.title{font-size:22px;font-weight:900;color:var(--gold)}.sub{font-size:10px;color:#b5c0b8;letter-spacing:1.2px;margin-top:5px}.status{margin-left:auto;color:#7be23b;font-size:11px}
+.nav{display:grid;grid-template-columns:repeat(9,1fr);margin-top:11px;border:1px solid #213328;border-radius:8px;overflow:hidden}.nav button{min-height:61px;border:0;border-right:1px solid #213328;background:#09110d;color:#ccd4cd;font-weight:700;cursor:pointer}.nav button:last-child{border-right:0}.nav button.active{background:#112819;color:#a2eb51;box-shadow:inset 0 0 0 1px #4b9a2d}.ico{display:block;font-size:20px;color:var(--gold);margin-bottom:4px}
+.tab{margin-top:10px}.hidden{display:none}.grid{display:grid;grid-template-columns:255px 1fr 305px;gap:10px}.panel{background:linear-gradient(180deg,#0c1711,#08100c);border:1px solid var(--line);border-radius:9px;padding:11px}.panel h3{font-size:12px;color:var(--gold);margin:0 0 10px;text-transform:uppercase;letter-spacing:.2px}.section{margin-top:10px}
+.field{margin:8px 0}.field label{display:block;color:#8d9b91;font-size:10px;margin-bottom:4px}.field input,.field select,.field textarea{width:100%;background:#07100c;color:#eef3ef;border:1px solid #304533;border-radius:6px;padding:9px;font-size:13px}.field textarea{min-height:82px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{border:1px solid #a8750c;background:linear-gradient(#c58a11,#825400);color:white;border-radius:6px;padding:10px 12px;font-weight:800;cursor:pointer}.btn.green{background:linear-gradient(#4d9e28,#236515);border-color:#4f9e31}.btn.dark{background:#0b1510;border-color:#38513e}.btn.blue{background:linear-gradient(#277eb0,#185274);border-color:#3b91c0}.btn.full{width:100%}
+.metric{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #203126;padding:7px 0;font-size:12px}.metric strong{font-size:14px}.big{font-size:27px;color:var(--green);font-weight:900}.tag{display:inline-block;padding:5px 9px;border-radius:14px;background:#17351d;color:#9ae750}.danger{color:#ff7565}.good{color:#8ee34d}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{background:#0b1710;border:1px solid #2b402f;border-radius:8px;padding:10px}.card .label{color:#89968d;font-size:10px}.card .value{font-size:19px;font-weight:900;margin-top:4px}
+.main2{display:grid;grid-template-columns:1.05fr .95fr;gap:10px;margin-top:10px}.table{width:100%;border-collapse:collapse;font-size:11px}.table th,.table td{padding:8px;border-bottom:1px solid #203126;text-align:left;vertical-align:top}.table th{color:var(--gold)}.table td strong{font-size:12px}
+.map{height:280px;border-radius:7px;background:#07100e;position:relative;overflow:hidden;border:1px solid #1e3226}.map:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#16251d 1px,transparent 1px),linear-gradient(90deg,#16251d 1px,transparent 1px);background-size:30px 30px;opacity:.5}.route{position:absolute;left:17%;right:19%;top:55%;height:4px;background:linear-gradient(90deg,#e83d2f,#a9db2b,#78d238);transform:rotate(-9deg);box-shadow:0 0 10px #79cf38}.pin{position:absolute;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#80d23d;box-shadow:0 0 10px #80d23d}.pin b{position:absolute;transform:rotate(45deg);font-size:11px;white-space:nowrap;left:14px;top:-3px;color:white}.pin.red{background:#e83d2f;box-shadow:0 0 10px #e83d2f}.p1{right:14%;top:25%}.p2{left:14%;bottom:24%}
+.gauge{width:190px;height:95px;border-radius:190px 190px 0 0;background:conic-gradient(from 270deg,#d52d24 0 28%,#e8a51b 28% 58%,#7bcf37 58% 100%);position:relative;margin:12px auto 5px}.gauge:after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:73px;background:#0b1510;border-radius:160px 160px 0 0}.needle{position:absolute;z-index:2;width:5px;height:77px;left:92px;bottom:-1px;background:#dfeadf;transform-origin:bottom center;transform:rotate(42deg);border-radius:5px}.hub{position:absolute;z-index:3;left:87px;bottom:-6px;width:15px;height:15px;border-radius:50%;background:var(--green)}
+.quick{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.quick button{background:#09130e;border:1px solid #29412e;color:#d7ded8;border-radius:6px;padding:8px;text-align:left;cursor:pointer}
+.notice{border-left:3px solid var(--gold);padding:8px 10px;background:#151c12;color:#d8ded8;font-size:12px}.search{display:flex;gap:8px}.search input{flex:1}
+.footer{margin-top:10px;text-align:center;color:#6f7c72;font-size:10px;padding:10px}
+@media(max-width:1080px){.grid{grid-template-columns:1fr}.main2{grid-template-columns:1fr}}
+@media(max-width:720px){.app{padding:4px}.title{font-size:17px}.logo{font-size:25px}.logo small{font-size:11px}.nav{grid-template-columns:repeat(3,1fr)}.nav button{min-height:55px}.cards{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.brand{align-items:flex-start}.status{font-size:9px}.table{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div class="brand">
+  <div class="logo">L&M<br><small>TECHNIC ENERGY</small></div>
+  <div><div class="title">EUROPEJSKI KALKULATOR PELETU 1.0</div><div class="sub">KUPNO • WORKOWANIE • SPRZEDAŻ • TRANSPORT • EKSPORT • ANALIZA OPŁACALNOŚCI</div></div>
+  <div class="status">● ONLINE • BAZA LOKALNA</div>
+ </div>
+ <nav class="nav">
+  <button class="active" data-tab="dashboard"><span class="ico">⌂</span>PULPIT</button>
+  <button data-tab="offers"><span class="ico">▣</span>OFERTY</button>
+  <button data-tab="calc"><span class="ico">▤</span>KALKULATOR</button>
+  <button data-tab="transport"><span class="ico">▱</span>TRANSPORT</button>
+  <button data-tab="markets"><span class="ico">◎</span>RYNKI EU</button>
+  <button data-tab="suppliers"><span class="ico">€</span>DOSTAWCY</button>
+  <button data-tab="customers"><span class="ico">♙</span>KLIENCI</button>
+  <button data-tab="reports"><span class="ico">▤</span>RAPORTY</button>
+  <button data-tab="settings"><span class="ico">⚙</span>USTAWIENIA</button>
+ </nav>
+</header>
+
+<section id="dashboard" class="tab">
+<div class="grid">
+<aside>
+ <div class="panel"><h3>NOWA OFERTA</h3>
+  <div class="field"><label>Data / godzina</label><input id="date" type="datetime-local"></div>
+  <div class="field"><label>Dostawca</label><select id="supplierSel"></select></div>
+  <div class="field"><label>Rodzaj pelletu</label><div class="row"><select id="class"><option>A1 (ENplus)</option><option>A2</option></select><select id="diam"><option>6 mm</option><option>8 mm</option></select></div></div>
+  <div class="field"><label>Forma zakupu</label><select id="form"><option>Luzem</option><option>Big-Bag</option><option>Worki 15 kg</option></select></div>
+  <div class="field"><label>Cena zakupu netto [PLN/t]</label><input id="buy" type="number" value="1250"></div>
+  <div class="field"><label>Ilość [t]</label><input id="qty" type="number" value="26"></div>
+  <button class="btn green full" onclick="calculate()">OBLICZ OPŁACALNOŚĆ</button>
+ </div>
+ <div class="panel section"><h3>PODSUMOWANIE OFERTY</h3>
+  <div class="metric">Koszt całkowity <strong id="cost">—</strong></div>
+  <div class="metric">Cena sprzedaży <strong id="sellOut">—</strong></div>
+  <div class="metric">Marża netto <strong id="margin">—</strong></div>
+  <div class="metric">Marża % <strong id="marginPct">—</strong></div>
+  <p id="decision" class="tag">Wprowadź dane i oblicz</p>
+ </div>
+</aside>
+
+<main>
+ <div class="cards">
+  <div class="card"><div class="label">KOSZT ZAKUPU</div><div class="value" id="buyCard">1 250 zł/t</div></div>
+  <div class="card"><div class="label">TRANSPORT</div><div class="value" id="transCard">224 zł/t</div></div>
+  <div class="card"><div class="label">KOSZT PEŁNY</div><div class="value" id="fullCard">1 709 zł/t</div></div>
+  <div class="card"><div class="label">MARŻA</div><div class="value" id="marginCard">4,72%</div></div>
+ </div>
+
+ <div class="panel section"><h3>KALKULATOR TRANSPORTU</h3>
+  <div class="row">
+   <div><div class="field"><label>SKĄD (ZAŁADUNEK)</label><input id="from" value="Gdańsk"></div><div class="field"><label>DOKĄD (ROZŁADUNEK)</label><input id="to" value="Berlin"></div></div>
+   <div><div class="field"><label>ODLEGŁOŚĆ [km]</label><input id="km" type="number" value="535"></div><div class="field"><label>STAWKA [PLN/km]</label><input id="rate" type="number" step=".01" value="4.25"></div></div>
+  </div>
+  <button class="btn" onclick="calculateTransport()">PRZELICZ TRANSPORT</button>
+  <span id="transportResult" style="margin-left:12px;color:#86df3b;font-weight:bold">2 274,00 zł / kurs</span>
+ </div>
+
+ <div class="panel section"><h3>MAPA TRASY</h3><div class="map"><div class="route"></div><div class="pin p1"><b>Berlin</b></div><div class="pin red p2"><b>Gdańsk</b></div></div>
+  <div class="metric"><span>Odległość</span><strong id="kmOut">535 km</strong></div>
+ </div>
+
+ <div class="panel section"><h3>SZYBKI DOSTĘP</h3><div class="quick">
+  <button onclick="showTab('offers')">▣ Nowa / zapisana oferta</button><button onclick="showTab('suppliers')">€ Baza dostawców</button>
+  <button onclick="showTab('customers')">♙ Baza klientów</button><button onclick="showTab('reports')">▤ Raport / PDF</button>
+ </div></div>
+</main>
+
+<aside>
+ <div class="panel"><h3>KOSZT TRANSPORTU — SZCZEGÓŁY</h3>
+  <div class="metric">Stawka <strong id="rateOut">4,25 PLN/km</strong></div><div class="metric">Dystans <strong id="distOut">535 km</strong></div>
+  <div class="metric">Ładunek <strong id="loadOut">24 t</strong></div><div class="metric">Koszt / t <strong id="transportPerT">224,12 PLN</strong></div>
+  <div class="metric">Razem / t <strong class="big" id="totalPerT">1 709,00 PLN</strong></div>
+ </div>
+ <div class="panel section"><h3>WSKAŹNIK OPŁACALNOŚCI</h3>
+  <div class="gauge"><div class="needle"></div><div class="hub"></div></div><div style="text-align:center"><div class="big" id="gauge">4,72%</div><div style="color:#91a097">MARŻA NETTO</div></div>
+  <button class="btn green full" style="margin-top:10px" onclick="saveOffer()">ZAPISZ OFERTĘ</button>
+ </div>
+ <div class="panel section"><h3>PIERWSZY DOSTAWCA</h3><div class="notice"><b>Max Mazurkiewicz / Giełda Pelletu</b><br>6 mm A1 • 1 250 zł/t netto FCA Gdańsk • min. 26 t<br><br>Badanie OPEC Grudziądz nr 1286/2026, próbka 31.07.2026, badanie 04–05.08.2026.</div></div>
+</aside>
+</div>
+
+<div class="main2">
+ <div class="panel"><h3>NAJLEPSZE RYNKI SPRZEDAŻY</h3><table class="table"><thead><tr><th>Kraj</th><th>Cena sprzedaży</th><th>Koszt</th><th>Marża</th></tr></thead><tbody id="marketsBody"></tbody></table></div>
+ <div class="panel"><h3>MOI DOSTAWCY — SZYBKI DOSTĘP</h3><table class="table"><thead><tr><th>Dostawca</th><th>Cena</th><th>Min.</th><th>Status</th></tr></thead><tbody id="supBody"></tbody></table><button class="btn green full" onclick="showTab('suppliers')" style="margin-top:8px">ZARZĄDZAJ BAZĄ DOSTAWCÓW</button></div>
+</div>
+</section>
+
+<section id="calc" class="tab hidden"><div class="panel"><h3>KALKULATOR PEŁNY — KUPNO → WORKOWANIE → TRANSPORT → SPRZEDAŻ</h3>
+ <div class="cards"><div class="card"><div class="label">ZAKUP</div><div class="value" id="c1">1 250</div></div><div class="card"><div class="label">WORKOWANIE</div><div class="value" id="c2">42</div></div><div class="card"><div class="label">PALETA + MATERIAŁ</div><div class="value" id="c3">88,67</div></div><div class="card"><div class="label">TRANSPORT</div><div class="value" id="c4">224,12</div></div></div>
+ <div class="row section"><div class="field"><label>CENA SPRZEDAŻY [PLN/t]</label><input id="sell" type="number" value="1580"></div><div class="field"><label>MINIMALNA MARŻA [%]</label><input id="minMargin" type="number" value="3"></div></div>
+ <button class="btn green" onclick="calculate()">PRZELICZ PEŁNY KALKULATOR</button>
+ <div class="section notice">Każdy koszt pozostaje edytowalny. Ceny dostawców i ceny sprzedaży można negocjować niezależnie. Wynik służy do decyzji zakupowej i handlowej.</div>
+ </div></section>
+
+<section id="transport" class="tab hidden"><div class="panel"><h3>TRANSPORT — BAZA TRAS I STAWEK</h3>
+ <div class="row"><div class="field"><label>TRASA</label><input id="tRoute" value="Gdańsk → Berlin"></div><div class="field"><label>DYSTANS [km]</label><input id="tKm" type="number" value="535"></div></div>
+ <div class="row"><div class="field"><label>STAWKA [PLN/km]</label><input id="tRate" type="number" value="4.25"></div><div class="field"><label>ŁADUNEK [t]</label><input id="tLoad" type="number" value="24"></div></div>
+ <button class="btn green" onclick="calcT2()">OBLICZ</button><div class="big section" id="tOut">—</div>
+ </div></section>
+
+<section id="suppliers" class="tab hidden"><div class="panel"><h3>BAZA DOSTAWCÓW — KONTRAHENCI ZAKUPU</h3>
+ <div class="row"><div class="field"><label>Nazwa</label><input id="sName" value="Max Mazurkiewicz / Giełda Pelletu"></div><div class="field"><label>Kontakt / WWW</label><input id="sContact" value="www.gieldapelletu.pl"></div></div>
+ <div class="row"><div class="field"><label>Produkt</label><input id="sProduct" value="Pellet drzewny 6 mm A1"></div><div class="field"><label>Cena netto [PLN/t]</label><input id="sPrice" type="number" value="1250"></div></div>
+ <div class="row"><div class="field"><label>Minimum [t]</label><input id="sMin" type="number" value="26"></div><div class="field"><label>Forma</label><select id="sForm"><option>Luzem</option><option>Big-Bag</option><option>Worki 15 kg</option></select></div></div>
+ <div class="field"><label>Notatka / negocjacje / dokumenty jakościowe</label><textarea id="sNote">FCA Gdańsk. Dostawca przesłał zdjęcia i sprawozdanie OPEC Grudziądz nr 1286/2026. Cena wyjściowa 1 250 zł/t netto. Możliwa negocjacja ceny i marży.</textarea></div>
+ <button class="btn green" onclick="addSupplier()">DODAJ / AKTUALIZUJ DOSTAWCĘ</button>
+ <button class="btn dark" onclick="backup()">EKSPORTUJ BAZĘ</button>
+ <input id="restoreFile" type="file" accept=".json" style="display:none" onchange="restore(event)">
+ <button class="btn dark" onclick="document.getElementById('restoreFile').click()">IMPORTUJ BAZĘ</button>
+ <div class="section"><table class="table"><thead><tr><th>Dostawca</th><th>Produkt</th><th>Cena</th><th>Min.</th><th>Uwagi</th></tr></thead><tbody id="supplierTable"></tbody></table></div>
+ </div></section>
+
+<section id="customers" class="tab hidden"><div class="panel"><h3>BAZA KLIENTÓW — ODBIORCY I PROFORMA</h3>
+ <div class="row"><div class="field"><label>Firma / osoba</label><input id="cName" placeholder="np. klient DE"></div><div class="field"><label>Kraj / miasto</label><input id="cPlace" placeholder="np. Berlin, Niemcy"></div></div>
+ <div class="row"><div class="field"><label>Telefon / e-mail</label><input id="cContact"></div><div class="field"><label>Potencjalny zakup [t]</label><input id="cQty" type="number" value="1"></div></div>
+ <div class="field"><label>Uwagi</label><textarea id="cNote" placeholder="np. zainteresowany workami 15 kg / Big-Bag / luzem"></textarea></div>
+ <button class="btn green" onclick="addCustomer()">DODAJ KLIENTA</button>
+ <div class="section"><table class="table"><thead><tr><th>Klient</th><th>Lokalizacja</th><th>Kontakt</th><th>Ilość</th><th>Uwagi</th></tr></thead><tbody id="customerTable"></tbody></table></div>
+ </div></section>
+
+<section id="offers" class="tab hidden"><div class="panel"><h3>OFERTY — HISTORIA KALKULACJI</h3><p class="notice">Zapisane oferty są przechowywane w urządzeniu. Cena zakupu, transport, koszt pełny i marża mogą być później ponownie analizowane.</p><table class="table"><thead><tr><th>Data</th><th>Dostawca</th><th>Zakup</th><th>Koszt pełny</th><th>Sprzedaż</th><th>Marża</th></tr></thead><tbody id="offersBody"></tbody></table></div></section>
+
+<section id="markets" class="tab hidden"><div class="panel"><h3>RYNKI EU — PORÓWNANIE CEN</h3><div class="cards" id="marketCards"></div></div></section>
+
+<section id="reports" class="tab hidden"><div class="panel"><h3>RAPORTY I KOPIE DANYCH</h3>
+ <button class="btn green" onclick="window.print()">DRUKUJ / ZAPISZ PDF</button>
+ <button class="btn dark" onclick="backup()">KOPIA BAZY JSON</button>
+ <div class="section notice">Raport PDF obejmuje aktualnie widoczne dane. Automatyczna synchronizacja Google Drive będzie kolejnym etapem; do tego czasu kopię JSON można przechowywać na udostępnionym Dysku Google.</div>
+ </div></section>
+
+<section id="settings" class="tab hidden"><div class="panel"><h3>USTAWIENIA</h3>
+ <p><b>Silnik:</b> samodzielna aplikacja HTML/JS — bez QGIS.</p>
+ <p><b>Dane:</b> zapis lokalny w pamięci przeglądarki urządzenia.</p>
+ <p><b>Kopia:</b> eksport/import JSON.</p>
+ <p><b>Google Drive:</b> obecnie ręczny eksport/import; automatyczne podpięcie Drive wymaga późniejszego uwierzytelnienia usługi.</p>
+ <p><b>Ważne:</b> ten plik należy otwierać w <b>Google Chrome, Samsung Internet albo Edge</b>. Nie jest to projekt QGIS.</p>
+ </div></section>
+
+<div class="footer">L&M Technic Energy © 2026 • Europejski Kalkulator Peletu 1.0 • PEŁNY INTERFEJS APLIKACYJNY</div>
+</div>
+
+<script>
+const KEY='lm_energy_1_0_full';
+const defaultData={
+ suppliers:[{name:'Max Mazurkiewicz / Giełda Pelletu',contact:'www.gieldapelletu.pl',product:'Pellet drzewny 6 mm A1',price:1250,min:26,form:'Luzem',note:'FCA Gdańsk. Sprawozdanie OPEC Grudziądz nr 1286/2026. Cena wyjściowa 1 250 zł/t netto. Możliwa negocjacja.'}],
+ customers:[],
+ offers:[],
+ history:[],
+ markets:[
+  {country:'Szwajcaria (CH)',price:2712.33,cost:1829,margin:883.33},
+  {country:'Austria (AT)',price:2236.02,cost:1759,margin:477.02},
+  {country:'Niemcy (DE)',price:2108.41,cost:1769,margin:339.41},
+  {country:'Czechy (CZ)',price:2136,cost:1789,margin:347},
+  {country:'Słowacja (SK)',price:2117.95,cost:1749,margin:368.95},
+  {country:'Polska (PL)',price:1580,cost:1589,margin:-9}
+ ]};
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||defaultData;
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function money(v){return Number(v||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł'}
+function pct(v){return Number(v||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'}
+function showTab(id){document.querySelectorAll('.tab').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function setDate(){let d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());document.getElementById('date').value=d.toISOString().slice(0,16)}
+function currentCalc(){
+ let buy=+document.getElementById('buy').value||0, km=+document.getElementById('km').value||0, rate=+document.getElementById('rate').value||0, qty=+document.getElementById('qty').value||1;
+ let trans=km*rate*2/Math.max(qty,1), packaging=104.67, full=buy+trans+packaging, sell=+(document.getElementById('sell')?.value||1580), margin=sell-full, mp=margin/sell*100;
+ return {buy,km,rate,qty,trans,packaging,full,sell,margin,mp};
+}
+function calculate(){
+ const x=currentCalc();
+ document.getElementById('buyCard').textContent=money(x.buy)+'/t';
+ document.getElementById('transCard').textContent=money(x.trans)+'/t';
+ document.getElementById('fullCard').textContent=money(x.full)+'/t';
+ document.getElementById('marginCard').textContent=pct(x.mp);
+ document.getElementById('cost').textContent=money(x.full)+'/t';
+ document.getElementById('sellOut').textContent=money(x.sell)+'/t';
+ document.getElementById('margin').textContent=money(x.margin)+'/t';
+ document.getElementById('marginPct').textContent=pct(x.mp);
+ document.getElementById('totalPerT').textContent=money(x.full);
+ document.getElementById('transportPerT').textContent=money(x.trans);
+ document.getElementById('gauge').textContent=pct(x.mp);
+ document.getElementById('decision').textContent=x.mp>=3?'OPŁACA SIĘ — WYNIK POWYŻEJ MINIMUM':'NIE OPŁACA SIĘ — NEGOCJUJ CENĘ';
+ document.getElementById('decision').className=x.mp>=3?'tag good':'tag danger';
+ document.getElementById('c1').textContent=x.buy.toFixed(2);document.getElementById('c2').textContent='42,00';document.getElementById('c3').textContent='62,67';document.getElementById('c4').textContent=x.trans.toFixed(2);
+}
+function calculateTransport(){
+ const km=+document.getElementById('km').value||0, rate=+document.getElementById('rate').value||0, qty=+document.getElementById('qty').value||24;
+ const total=km*rate*2;const per=total/Math.max(qty,1);
+ document.getElementById('transportResult').textContent=money(total)+' / kurs';
+ document.getElementById('transportPerT').textContent=money(per);
+ document.getElementById('kmOut').textContent=km+' km';document.getElementById('distOut').textContent=km+' km';document.getElementById('rateOut').textContent=rate.toFixed(2)+' PLN/km';
+ calculate();
+}
+function saveOffer(){
+ const x=currentCalc(), sel=document.getElementById('supplierSel'), name=sel.options[sel.selectedIndex]?.text||'Nie wybrano';
+ data.offers.unshift({date:document.getElementById('date').value,supplier:name,buy:x.buy,full:x.full,sell:x.sell,margin:x.margin,mp:x.mp});
+ data.history.unshift('Zapisano ofertę: '+name+' • zakup '+x.buy+' zł/t • marża '+x.mp.toFixed(2)+'%');
+ save(); alert('Oferta została zapisana w bazie aplikacji.');
+}
+function addSupplier(){
+ const s={name:document.getElementById('sName').value.trim(),contact:document.getElementById('sContact').value.trim(),product:document.getElementById('sProduct').value.trim(),price:+document.getElementById('sPrice').value||0,min:+document.getElementById('sMin').value||0,form:document.getElementById('sForm').value,note:document.getElementById('sNote').value.trim()};
+ if(!s.name)return alert('Podaj nazwę dostawcy.');
+ const i=data.suppliers.findIndex(x=>x.name.toLowerCase()===s.name.toLowerCase()); if(i>=0)data.suppliers[i]=s;else data.suppliers.push(s);
+ document.getElementById('buy').value=s.price;save();alert('Dostawca zapisany. Możesz później negocjować jego cenę.');
+}
+function addCustomer(){
+ const c={name:document.getElementById('cName').value.trim(),place:document.getElementById('cPlace').value.trim(),contact:document.getElementById('cContact').value.trim(),qty:+document.getElementById('cQty').value||0,note:document.getElementById('cNote').value.trim()};
+ if(!c.name)return alert('Podaj firmę lub osobę.');
+ data.customers.push(c);save();['cName','cPlace','cContact','cNote'].forEach(id=>document.getElementById(id).value='');
+}
+function calcT2(){const km=+document.getElementById('tKm').value||0,rate=+document.getElementById('tRate').value||0,load=+document.getElementById('tLoad').value||1;document.getElementById('tOut').textContent=money(km*rate*2)+' / kurs • '+money(km*rate*2/load)+'/t'}
+function backup(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='LM_Technic_Energy_baza_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)
+}
+function restore(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);save();alert('Baza została zaimportowana.')}catch(err){alert('Nieprawidłowy plik JSON.')}};r.readAsText(f)}
+function renderSuppliers(){
+ const sSel=document.getElementById('supplierSel');sSel.innerHTML='';data.suppliers.forEach((s,i)=>{let o=document.createElement('option');o.value=i;o.textContent=s.name;sSel.appendChild(o)});
+ const rows=data.suppliers.map(s=>`<tr><td><strong>${esc(s.name)}</strong><br><span class="good">${esc(s.contact)}</span></td><td>${esc(s.product)}</td><td>${money(s.price)}</td><td>${s.min} t</td><td>${esc(s.note)}</td></tr>`).join('');
+ document.getElementById('supplierTable').innerHTML=rows;
+ document.getElementById('supBody').innerHTML=data.suppliers.map(s=>`<tr><td>${esc(s.name)}</td><td>${money(s.price)}</td><td>${s.min} t</td><td><span class="tag">AKTYWNY</span></td></tr>`).join('');
+}
+function renderCustomers(){document.getElementById('customerTable').innerHTML=data.customers.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.place)}</td><td>${esc(c.contact)}</td><td>${c.qty} t</td><td>${esc(c.note)}</td></tr>`).join('')||'<tr><td colspan="5">Baza klientów jest jeszcze pusta — dodaj pierwszego odbiorcę.</td></tr>'}
+function renderOffers(){document.getElementById('offersBody').innerHTML=data.offers.map(o=>`<tr><td>${esc(o.date)}</td><td>${esc(o.supplier)}</td><td>${money(o.buy)}</td><td>${money(o.full)}</td><td>${money(o.sell)}</td><td class="${o.margin>=0?'good':'danger'}">${money(o.margin)} (${pct(o.mp)})</td></tr>`).join('')||'<tr><td colspan="6">Brak zapisanych ofert.</td></tr>'}
+function renderMarkets(){document.getElementById('marketsBody').innerHTML=data.markets.map(m=>`<tr><td><strong>${m.country}</strong></td><td>${money(m.price)}</td><td>${money(m.cost)}</td><td class="${m.margin>=0?'good':'danger'}">${money(m.margin)} / ${pct(m.margin/m.price*100)}</td></tr>`).join('');document.getElementById('marketCards').innerHTML=data.markets.map(m=>`<div class="card"><div class="label">${m.country}</div><div class="value">${money(m.price)}</div><div class="${m.margin>=0?'good':'danger'}">Marża ${money(m.margin)}</div></div>`).join('')}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderAll(){renderSuppliers();renderCustomers();renderOffers();renderMarkets();calculate()}
+setDate();renderAll();
+document.getElementById('supplierSel').addEventListener('change',e=>{const s=data.suppliers[+e.target.value];if(s){document.getElementById('buy').value=s.price;document.getElementById('sName').value=s.name;document.getElementById('sPrice').value=s.price;calculate()}});
+</script>
+</body>
+</html>

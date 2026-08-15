@@ -1,0 +1,18 @@
+KALKULATOR PELETU 1.0 — PAKIET PWA
+
+Ten pakiet bazuje na odzyskanym Kalkulatorze Peletu 1.0 z 14.08.2026.
+Oryginalny plik zachowano jako:
+index_original_14-08-2026.html
+
+Wersja instalacyjna:
+index.html
+
+Pakiet PWA zawiera:
+- ikonę aplikacji 192x192 i 512x512,
+- manifest.webmanifest,
+- service worker sw.js,
+- kalkulator bez QGIS.
+
+WAŻNE:
+Aby Android mógł zainstalować aplikację PWA z ikoną, pliki muszą być udostępnione przez bezpieczny adres HTTPS.
+Nie należy uruchamiać PWA bezpośrednio jako file://.
