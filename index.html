@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07100b">
-<title>L&M Technic Energy — Europejski Kalkulator Peletu 1.0</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>L&M Technic Energy — Europejski Kalkulator Peletu 1.1</title>
 <style>
 :root{--bg:#040806;--panel:#0a120e;--panel2:#0d1812;--line:#2a402d;--gold:#e8a51b;--green:#77d735;--text:#eef2ed;--muted:#9aa69d;--red:#ef493d;--blue:#4ca9e8}
 *{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 50% -20%,#17331e 0,#050a07 46%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
@@ -18,7 +22,10 @@ body{min-height:100vh}.app{max-width:1540px;margin:auto;padding:10px}
 .metric{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #203126;padding:7px 0;font-size:12px}.metric strong{font-size:14px}.big{font-size:27px;color:var(--green);font-weight:900}.tag{display:inline-block;padding:5px 9px;border-radius:14px;background:#17351d;color:#9ae750}.danger{color:#ff7565}.good{color:#8ee34d}
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card{background:#0b1710;border:1px solid #2b402f;border-radius:8px;padding:10px}.card .label{color:#89968d;font-size:10px}.card .value{font-size:19px;font-weight:900;margin-top:4px}
 .main2{display:grid;grid-template-columns:1.05fr .95fr;gap:10px;margin-top:10px}.table{width:100%;border-collapse:collapse;font-size:11px}.table th,.table td{padding:8px;border-bottom:1px solid #203126;text-align:left;vertical-align:top}.table th{color:var(--gold)}.table td strong{font-size:12px}
-.map{height:280px;border-radius:7px;background:#07100e;position:relative;overflow:hidden;border:1px solid #1e3226}.map:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#16251d 1px,transparent 1px),linear-gradient(90deg,#16251d 1px,transparent 1px);background-size:30px 30px;opacity:.5}.route{position:absolute;left:17%;right:19%;top:55%;height:4px;background:linear-gradient(90deg,#e83d2f,#a9db2b,#78d238);transform:rotate(-9deg);box-shadow:0 0 10px #79cf38}.pin{position:absolute;width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#80d23d;box-shadow:0 0 10px #80d23d}.pin b{position:absolute;transform:rotate(45deg);font-size:11px;white-space:nowrap;left:14px;top:-3px;color:white}.pin.red{background:#e83d2f;box-shadow:0 0 10px #e83d2f}.p1{right:14%;top:25%}.p2{left:14%;bottom:24%}
+.map{height:340px;border-radius:7px;position:relative;overflow:hidden;border:1px solid #1e3226;background:#07100e}
+.map iframe{width:100%;height:100%;border:0;display:block}
+.mapbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.mapnote{font-size:10px;color:#91a097;margin-top:6px;line-height:1.4}
 .gauge{width:190px;height:95px;border-radius:190px 190px 0 0;background:conic-gradient(from 270deg,#d52d24 0 28%,#e8a51b 28% 58%,#7bcf37 58% 100%);position:relative;margin:12px auto 5px}.gauge:after{content:"";position:absolute;left:22px;right:22px;bottom:0;height:73px;background:#0b1510;border-radius:160px 160px 0 0}.needle{position:absolute;z-index:2;width:5px;height:77px;left:92px;bottom:-1px;background:#dfeadf;transform-origin:bottom center;transform:rotate(42deg);border-radius:5px}.hub{position:absolute;z-index:3;left:87px;bottom:-6px;width:15px;height:15px;border-radius:50%;background:var(--green)}
 .quick{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.quick button{background:#09130e;border:1px solid #29412e;color:#d7ded8;border-radius:6px;padding:8px;text-align:left;cursor:pointer}
 .notice{border-left:3px solid var(--gold);padding:8px 10px;background:#151c12;color:#d8ded8;font-size:12px}.search{display:flex;gap:8px}.search input{flex:1}
@@ -26,25 +33,13 @@ body{min-height:100vh}.app{max-width:1540px;margin:auto;padding:10px}
 @media(max-width:1080px){.grid{grid-template-columns:1fr}.main2{grid-template-columns:1fr}}
 @media(max-width:720px){.app{padding:4px}.title{font-size:17px}.logo{font-size:25px}.logo small{font-size:11px}.nav{grid-template-columns:repeat(3,1fr)}.nav button{min-height:55px}.cards{grid-template-columns:1fr 1fr}.row{grid-template-columns:1fr}.brand{align-items:flex-start}.status{font-size:9px}.table{font-size:10px}}
 </style>
-
-<link rel="manifest" href="manifest.webmanifest">
-<link <link rel="icon" href="./ikona-192.png" type="image/png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kalkulator Peletu">
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-}
-</script>
-
 </head>
 <body>
 <div class="app">
 <header class="top">
  <div class="brand">
   <div class="logo">L&M<br><small>TECHNIC ENERGY</small></div>
-  <div><div class="title">EUROPEJSKI KALKULATOR PELETU 1.0</div><div class="sub">KUPNO • WORKOWANIE • SPRZEDAŻ • TRANSPORT • EKSPORT • ANALIZA OPŁACALNOŚCI</div></div>
+  <div><div class="title">EUROPEJSKI KALKULATOR PELETU 1.1</div><div class="sub">KUPNO • WORKOWANIE • SPRZEDAŻ • TRANSPORT • EKSPORT • ANALIZA OPŁACALNOŚCI</div></div>
   <div class="status">● ONLINE • BAZA LOKALNA</div>
  </div>
  <nav class="nav">
@@ -98,8 +93,16 @@ if ('serviceWorker' in navigator) {
   <span id="transportResult" style="margin-left:12px;color:#86df3b;font-weight:bold">2 274,00 zł / kurs</span>
  </div>
 
- <div class="panel section"><h3>MAPA TRASY</h3><div class="map"><div class="route"></div><div class="pin p1"><b>Berlin</b></div><div class="pin red p2"><b>Gdańsk</b></div></div>
-  <div class="metric"><span>Odległość</span><strong id="kmOut">535 km</strong></div>
+ <div class="panel section"><h3>MAPA TRASY — GOOGLE MAPS</h3>
+  <div class="map">
+   <iframe id="googleMapFrame" title="Trasa Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+  <div class="mapbar">
+   <button class="btn green" onclick="updateGoogleMap()">WYZNACZ TRASĘ NA MAPIE</button>
+   <button class="btn dark" onclick="openGoogleMaps()">OTWÓRZ W GOOGLE MAPS</button>
+  </div>
+  <div class="mapnote">Mapa jest pobierana na żywo z Google Maps. Wpisz miejscowość startową i docelową powyżej, a następnie wybierz „Wyznacz trasę na mapie”.</div>
+  <div class="metric"><span>Odległość używana w kalkulatorze</span><strong id="kmOut">535 km</strong></div>
  </div>
 
  <div class="panel section"><h3>SZYBKI DOSTĘP</h3><div class="quick">
@@ -179,7 +182,7 @@ if ('serviceWorker' in navigator) {
  <p><b>Ważne:</b> ten plik należy otwierać w <b>Google Chrome, Samsung Internet albo Edge</b>. Nie jest to projekt QGIS.</p>
  </div></section>
 
-<div class="footer">L&M Technic Energy © 2026 • Europejski Kalkulator Peletu 1.0 • PEŁNY INTERFEJS APLIKACYJNY</div>
+<div class="footer">L&M Technic Energy © 2026 • Europejski Kalkulator Peletu 1.1 • PREMIUM • GOOGLE MAPS</div>
 </div>
 
 <script>
@@ -233,6 +236,19 @@ function calculateTransport(){
  document.getElementById('transportPerT').textContent=money(per);
  document.getElementById('kmOut').textContent=km+' km';document.getElementById('distOut').textContent=km+' km';document.getElementById('rateOut').textContent=rate.toFixed(2)+' PLN/km';
  calculate();
+ updateGoogleMap();
+}
+function updateGoogleMap(){
+ const from=(document.getElementById('from').value||'Gdańsk').trim();
+ const to=(document.getElementById('to').value||'Berlin').trim();
+ const url='https://maps.google.com/maps?saddr='+encodeURIComponent(from)+'&daddr='+encodeURIComponent(to)+'&output=embed';
+ document.getElementById('googleMapFrame').src=url;
+}
+function openGoogleMaps(){
+ const from=(document.getElementById('from').value||'Gdańsk').trim();
+ const to=(document.getElementById('to').value||'Berlin').trim();
+ const url='https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from)+'&destination='+encodeURIComponent(to);
+ window.open(url,'_blank','noopener');
 }
 function saveOffer(){
  const x=currentCalc(), sel=document.getElementById('supplierSel'), name=sel.options[sel.selectedIndex]?.text||'Nie wybrano';
@@ -267,7 +283,8 @@ function renderOffers(){document.getElementById('offersBody').innerHTML=data.off
 function renderMarkets(){document.getElementById('marketsBody').innerHTML=data.markets.map(m=>`<tr><td><strong>${m.country}</strong></td><td>${money(m.price)}</td><td>${money(m.cost)}</td><td class="${m.margin>=0?'good':'danger'}">${money(m.margin)} / ${pct(m.margin/m.price*100)}</td></tr>`).join('');document.getElementById('marketCards').innerHTML=data.markets.map(m=>`<div class="card"><div class="label">${m.country}</div><div class="value">${money(m.price)}</div><div class="${m.margin>=0?'good':'danger'}">Marża ${money(m.margin)}</div></div>`).join('')}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderAll(){renderSuppliers();renderCustomers();renderOffers();renderMarkets();calculate()}
-setDate();renderAll();
+setDate();renderAll();updateGoogleMap();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));}
 document.getElementById('supplierSel').addEventListener('change',e=>{const s=data.suppliers[+e.target.value];if(s){document.getElementById('buy').value=s.price;document.getElementById('sName').value=s.name;document.getElementById('sPrice').value=s.price;calculate()}});
 </script>
 </body>
