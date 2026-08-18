@@ -1,8 +1,21 @@
-const CACHE='lm-pellet-1-1-premium-v1';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./favicon.png'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
-self.addEventListener('fetch',e=>{
-  if(e.request.url.includes('google.com') || e.request.url.includes('googleapis.com') || e.request.url.includes('gstatic.com')) return;
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./index.html'))));
+const APP_VERSION='V30.0.1';
+const CACHE='lm-technic-energy-'+APP_VERSION;
+const CORE=['./','./index.html','./manifest.webmanifest','./version.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./LM_Technic_Energy_Biznesplan_i_materialy_MASTER_25_kart.pdf'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)));});
+self.addEventListener('message',event=>{if(event.data && event.data.type==='SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil((async()=>{for(const k of await caches.keys())if(k!==CACHE)await caches.delete(k);await self.clients.claim();})());});
+self.addEventListener('fetch',event=>{
+  const req=event.request;
+  if(req.method!=='GET')return;
+  const url=new URL(req.url);
+  if(url.origin!==self.location.origin)return;
+  if(req.mode==='navigate'){
+    event.respondWith((async()=>{try{const fresh=await fetch(req,{cache:'no-store'});const c=await caches.open(CACHE);c.put('./index.html',fresh.clone());return fresh;}catch(e){return (await caches.match(req)) || (await caches.match('./index.html'));}})());
+    return;
+  }
+  if(url.pathname.endsWith('/version.json') || url.pathname.endsWith('/service-worker.js')){
+    event.respondWith(fetch(req,{cache:'no-store'}).catch(()=>caches.match(req)));
+    return;
+  }
+  event.respondWith((async()=>{const cached=await caches.match(req);if(cached)return cached;try{const fresh=await fetch(req);const c=await caches.open(CACHE);c.put(req,fresh.clone());return fresh;}catch(e){return cached;}})());
 });

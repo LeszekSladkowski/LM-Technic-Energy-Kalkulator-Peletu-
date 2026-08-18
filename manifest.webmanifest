@@ -1,20 +1,37 @@
 {
-  "name": "L&M Technic Energy — Europejski Kalkulator Peletu 1.1 Premium",
-  "short_name": "Kalkulator Peletu",
+  "name": "L&M Technic Energy — Europejski Kalkulator Peletu 1.2 PREMIUM",
+  "short_name": "L&M Technic",
+  "description": "Europejski Kalkulator Peletu 1.2 PREMIUM — L&M Technic Energy",
+  "id": "./",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#040806",
-  "theme_color": "#07100b",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#000000",
+  "theme_color": "#020806",
+  "orientation": "any",
+  "lang": "pl-PL",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
