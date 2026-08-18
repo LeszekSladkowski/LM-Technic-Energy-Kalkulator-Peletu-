@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.0",
-  "build": "2026-08-18T23:30:00+02:00",
-  "notes": "FAKTURY PREMIUM: zatwierdzony MASTER faktury, generator live, wybór klienta, automatyczne dane, PDF, historia dokumentów, weryfikacja MF."
+  "version": "V31.0.1",
+  "build": "2026-08-19T00:06:00+02:00",
+  "notes": "FAKTURY PREMIUM: poprawka połączenia z bazą KLIENCI. Lista klientów czyta aktualne dane zapisane w lokalnej bazie aplikacji i automatycznie uzupełnia dane nabywcy."
 }

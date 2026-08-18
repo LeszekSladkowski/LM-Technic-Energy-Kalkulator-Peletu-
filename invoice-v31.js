@@ -33,7 +33,16 @@ function v31defaultRows(){return [
  {name:'',qty:1,unit:'szt.',price:0,vat:23}
 ]}
 function v31loadDraft(){try{return JSON.parse(localStorage.getItem(V31_DRAFT_KEY)||'null')}catch(e){return null}}
-function v31clientOptions(){return '<option value="">— wpisz ręcznie / wybierz klienta —</option>'+((window.CLIENTS_V13||[]).map((x,i)=>`<option value="${i}">${v31esc(x.name||('Klient '+(i+1)))} — ${v31esc(x.city||'')}</option>`).join(''))}
+function v31clients(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('lm_clients_v13_data')||'null');
+    if(Array.isArray(saved)&&saved.length)return saved;
+  }catch(e){}
+  try{if(typeof CLIENTS_V13!=='undefined'&&Array.isArray(CLIENTS_V13))return CLIENTS_V13}catch(e){}
+  try{if(Array.isArray(window.CLIENTS_V13))return window.CLIENTS_V13}catch(e){}
+  return [];
+}
+function v31clientOptions(){const clients=v31clients();return '<option value="">— wpisz ręcznie / wybierz klienta —</option>'+clients.map((x,i)=>`<option value="${i}">${v31esc(x.name||('Klient '+(i+1)))} — ${v31esc(x.city||'')}</option>`).join('')}
 function v31field(id,label,value='',type='text'){return `<div class="v31-field"><label>${label}</label><input id="${id}" type="${type}" value="${v31esc(value)}"></div>`}
 
 window.renderInvoicesV20=function(){
@@ -106,7 +115,7 @@ function renderRowsV31(){const b=document.getElementById('v31_rows');if(!b)retur
 window.addInvoiceRowV31=()=>{if(V31_ROWS.length>=6)return toast('W tym wzorze MASTER przewidziano maksymalnie 6 pozycji na jednej stronie.');V31_ROWS.push({name:'',qty:1,unit:'szt.',price:0,vat:23});renderRowsV31();renderInvoicePreviewV31()};
 window.removeInvoiceRowV31=i=>{if(V31_ROWS.length<=1)return;V31_ROWS.splice(i,1);renderRowsV31();renderInvoicePreviewV31()};
 
-window.fillBuyerFromClientV31=function(){const idx=Number(document.getElementById('v31_client').value);if(!Number.isInteger(idx))return;const x=(window.CLIENTS_V13||[])[idx];if(!x)return;document.getElementById('v31_b_name').value=x.name||'';document.getElementById('v31_b_nip').value=x.nip||'';document.getElementById('v31_b_regon').value=x.regon||'';document.getElementById('v31_b_address').value=x.invoiceAddress||x.delivery||[x.city,'Polska'].filter(Boolean).join(', ');document.getElementById('v31_b_phone').value=x.phone||'';document.getElementById('v31_b_email').value=x.email||'';document.getElementById('v31_status').textContent='✓ Dane klienta uzupełnione automatycznie z bazy KLIENCI.';renderInvoicePreviewV31()};
+window.fillBuyerFromClientV31=function(){const idx=Number(document.getElementById('v31_client').value);if(!Number.isInteger(idx))return;const x=v31clients()[idx];if(!x)return;document.getElementById('v31_b_name').value=x.name||'';document.getElementById('v31_b_nip').value=x.nip||'';document.getElementById('v31_b_regon').value=x.regon||'';document.getElementById('v31_b_address').value=x.invoiceAddress||x.delivery||[x.city,'Polska'].filter(Boolean).join(', ');document.getElementById('v31_b_phone').value=x.phone||'';document.getElementById('v31_b_email').value=x.email||'';document.getElementById('v31_status').textContent='✓ Dane klienta uzupełnione automatycznie z bazy KLIENCI.';renderInvoicePreviewV31()};
 window.restoreSellerV31=function(){for(const [k,v] of Object.entries({name:V31_SELLER_DEFAULT.name,nip:V31_SELLER_DEFAULT.nip,regon:V31_SELLER_DEFAULT.regon,address:V31_SELLER_DEFAULT.address,krs:V31_SELLER_DEFAULT.krs,phone:V31_SELLER_DEFAULT.phone,email:V31_SELLER_DEFAULT.email,web:V31_SELLER_DEFAULT.web})){const el=document.getElementById('v31_s_'+k);if(el)el.value=v}renderInvoicePreviewV31();toast('Przywrócono dane L&M Technic Sp. z o.o.')};
 window.lookupSellerMFV31=async function(){const nip=fieldVal('v31_s_nip').replace(/\D/g,''),date=fieldVal('v31_issue')||v31iso();const st=document.getElementById('v31_status');st.textContent='Sprawdzam dane w oficjalnym Wykazie Podatników VAT MF…';try{const r=await fetch(`https://wl-api.mf.gov.pl/api/search/nip/${nip}?date=${date}`,{cache:'no-store'});const j=await r.json();const x=j?.result?.subject;if(!x)throw new Error('Brak danych');document.getElementById('v31_s_name').value=x.name||fieldVal('v31_s_name');document.getElementById('v31_s_regon').value=x.regon||fieldVal('v31_s_regon');document.getElementById('v31_s_krs').value=x.krs||fieldVal('v31_s_krs');document.getElementById('v31_s_address').value=x.workingAddress||x.residenceAddress||fieldVal('v31_s_address');st.textContent=`✓ MF: ${x.statusVat||'status niepodany'} • dane firmy odświeżone.`;renderInvoicePreviewV31()}catch(e){st.textContent='Nie udało się pobrać danych z MF — pozostawiono lokalne dane rejestrowe L&M Technic.';st.classList.add('warn')}};
 
