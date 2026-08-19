@@ -14,3 +14,9 @@
 .v31-master{padding:0;overflow:hidden;background:#000}.v31-master-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #425d38}.v31-master-bar b{color:#97df28;font-size:17px}.v31-master-bar span{color:#e8b438;font-size:12px;font-weight:900}.v31-preview-shell{padding:12px;background:#010503}.v31-canvas{display:block;width:100%;height:auto;background:#fff;border:1px solid #665d32;border-radius:6px}.v31-master-lock{padding:8px 12px;border-left:4px solid #7cc61a;background:#061008;color:#aeb9ae;font-size:12px;line-height:1.4}
 .v31-status{margin-top:10px;border:1px solid #34552c;border-radius:8px;background:#061109;color:#aee75d;padding:9px 11px;font-size:12px;font-weight:800}.v31-status.warn{color:#ffd05a;border-color:#725c21}
 @media(max-width:700px){.v31-btnrow{grid-template-columns:1fr 1fr}.v31-grid4{grid-template-columns:1fr 1fr}}
+
+/* ===== V31.0.2 — STABILNE POLA + STAŁY RACHUNEK ===== */
+.v31-items input{touch-action:manipulation;scroll-margin:120px 0;caret-color:#fff}
+.v31-items input:focus{border-color:#8ed91e;box-shadow:0 0 0 2px rgba(142,217,30,.15);outline:none}
+.v31-bank-field input[readonly]{background:#06243a;border-color:#158ec3;color:#fff;font-size:15px;letter-spacing:.4px;cursor:default}
+.v31-btn,.v31-back,.v31-items .mini{touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}

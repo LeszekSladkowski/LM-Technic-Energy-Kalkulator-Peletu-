@@ -6,6 +6,8 @@
 const V31_INV_KEY='lm_invoice_records_v31';
 const V31_DRAFT_KEY='lm_invoice_draft_v31';
 const V31_MASTER_URL='./invoice-master.png';
+const V31_BANK_DEFAULT='46 1240 1037 1111 0011 2978 9216';
+const V31_DUE_DAYS=14;
 const V31_SELLER_DEFAULT={
   name:'L&M TECHNIC SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ',
   short:'L&M Technic Sp. z o.o.',
@@ -21,9 +23,9 @@ const V31_OLD_HISTORY_ROWS=window.historyRowsV26;
 
 function v31esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function v31money(n){return Number(n||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' PLN'}
-function v31iso(d){const x=new Date(d||Date.now());return Number.isNaN(x.getTime())?new Date().toISOString().slice(0,10):x.toISOString().slice(0,10)}
+function v31iso(d){const x=new Date(d||Date.now());if(Number.isNaN(x.getTime()))return v31iso(Date.now());const y=x.getFullYear(),m=String(x.getMonth()+1).padStart(2,'0'),day=String(x.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
 function v31pl(d){if(!d)return'';const [y,m,day]=String(d).split('-');return [day,m,y].filter(Boolean).join('.')}
-function v31addDays(iso,days){const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+Number(days||0));return d.toISOString().slice(0,10)}
+function v31addDays(iso,days){const [y,m,d]=String(iso||v31iso()).split('-').map(Number);const x=new Date(y,m-1,d||1,12,0,0);x.setDate(x.getDate()+Number(days||0));return v31iso(x)}
 function v31records(){try{const a=JSON.parse(localStorage.getItem(V31_INV_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
 function v31saveRecords(a){try{localStorage.setItem(V31_INV_KEY,JSON.stringify(a.slice(0,300)))}catch(e){}}
 function v31nextNo(type,date){const d=new Date((date||v31iso())+'T12:00:00');const mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear();const n=v31records().filter(x=>x.type===type&&String(x.issueDate||'').slice(0,7)===`${yy}-${mm}`).length+1;const serial=String(n).padStart(6,'0');return type==='proforma'?`PF/${serial}/${mm}/${yy}`:`${serial}/${mm}/${yy}`}
@@ -48,7 +50,7 @@ function v31field(id,label,value='',type='text'){return `<div class="v31-field">
 window.renderInvoicesV20=function(){
   const draft=v31loadDraft()||{};const today=v31iso();
   V31_ROWS=Array.isArray(draft.rows)&&draft.rows.length?draft.rows:v31defaultRows();
-  const type=draft.type||'final', issue=draft.issueDate||today, sale=draft.saleDate||today, due=draft.dueDate||v31addDays(today,14);
+  const type=draft.type||'final', issue=(draft.issueDate===today?draft.issueDate:today), sale=(draft.saleDate===today?draft.saleDate:today), due=(draft.issueDate===today&&draft.dueDate?draft.dueDate:v31addDays(today,V31_DUE_DAYS));
   const app=document.getElementById('app');app.innerHTML='';
   const d=document.createElement('div');d.className='v31-inv';d.innerHTML=`
    <div class="v31-head"><div class="v31-brand">L&M<small>TECHNIC</small></div><div class="v31-title"><h1>FAKTURY PREMIUM</h1><p>GENERATOR • KLIENCI • PDF • HISTORIA</p></div><button class="v31-back" onclick="go('home')">← PULPIT</button></div>
@@ -60,7 +62,7 @@ window.renderInvoicesV20=function(){
       ${v31field('v31_sale','Data sprzedaży',sale,'date')}
     </div><div class="v31-grid4" style="margin-top:10px">
       ${v31field('v31_due','Termin płatności',due,'date')}
-      <div class="v31-field"><label>Forma płatności</label><select id="v31_payment"><option>Przelew bankowy</option><option>Gotówka</option><option>Karta</option><option>Przedpłata</option></select></div>
+      <div class="v31-field"><label>Forma płatności</label><select id="v31_payment"><option ${(!draft.payment||draft.payment==='Przelew bankowy')?'selected':''}>Przelew bankowy</option><option ${draft.payment==='Gotówka'?'selected':''}>Gotówka</option><option ${draft.payment==='Karta'?'selected':''}>Karta</option><option ${draft.payment==='Przedpłata'?'selected':''}>Przedpłata</option></select></div>
       ${v31field('v31_order','Numer zamówienia',draft.order||'')}
       ${v31field('v31_ksef','Numer KSeF',draft.ksef||'')}
     </div></section>
@@ -74,7 +76,7 @@ window.renderInvoicesV20=function(){
       ${v31field('v31_s_phone','Telefon',draft.seller?.phone||V31_SELLER_DEFAULT.phone)}
       ${v31field('v31_s_email','E-mail',draft.seller?.email||V31_SELLER_DEFAULT.email,'email')}
       ${v31field('v31_s_web','WWW',draft.seller?.web||V31_SELLER_DEFAULT.web)}
-      ${v31field('v31_bank','Rachunek bankowy',draft.bank||'')}
+      <div class="v31-field v31-bank-field"><label>Rachunek bankowy — stały</label><input id="v31_bank" type="text" readonly value="${V31_BANK_DEFAULT}"></div>
     </div><div class="v31-registry"><strong>Dane rejestrowe:</strong> generator ma lokalny komplet danych spółki i przycisk weryfikacji na żywo w oficjalnym Wykazie Podatników VAT Ministerstwa Finansów.</div>
     <div class="v31-btnrow"><button class="v31-btn blue" onclick="lookupSellerMFV31()">🔎 SPRAWDŹ DANE FIRMY MF</button><button class="v31-btn" onclick="restoreSellerV31()">↺ PRZYWRÓĆ DANE L&M</button></div></section>
 
@@ -100,7 +102,7 @@ window.renderInvoicesV20=function(){
   app.appendChild(d);
   document.getElementById('v31_client').addEventListener('change',fillBuyerFromClientV31);
   document.getElementById('v31_type').addEventListener('change',()=>{const t=document.getElementById('v31_type').value;document.getElementById('v31_number').value=v31nextNo(t,document.getElementById('v31_issue').value);renderInvoicePreviewV31()});
-  document.getElementById('v31_issue').addEventListener('change',()=>{document.getElementById('v31_number').value=v31nextNo(document.getElementById('v31_type').value,document.getElementById('v31_issue').value);renderInvoicePreviewV31()});
+  document.getElementById('v31_issue').addEventListener('change',()=>{const issueDate=document.getElementById('v31_issue').value||v31iso();document.getElementById('v31_number').value=v31nextNo(document.getElementById('v31_type').value,issueDate);document.getElementById('v31_due').value=v31addDays(issueDate,V31_DUE_DAYS);renderInvoicePreviewV31()});
   d.querySelectorAll('input,select,textarea').forEach(el=>el.addEventListener('input',renderInvoicePreviewV31));
   renderRowsV31();loadMasterV31().then(renderInvoicePreviewV31);window.scrollTo({top:0,left:0,behavior:'auto'});
 };
@@ -108,21 +110,26 @@ window.renderInvoicesV20=function(){
 function loadMasterV31(){if(V31_MASTER_IMG&&V31_MASTER_IMG.complete)return Promise.resolve(V31_MASTER_IMG);return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{V31_MASTER_IMG=im;res(im)};im.onerror=rej;im.src=V31_MASTER_URL})}
 function fieldVal(id){return document.getElementById(id)?.value?.trim?.()||''}
 function collectInvoiceV31(){
-  return {id:'inv'+Date.now(),type:fieldVal('v31_type')||'final',number:fieldVal('v31_number'),issueDate:fieldVal('v31_issue'),saleDate:fieldVal('v31_sale'),dueDate:fieldVal('v31_due'),payment:fieldVal('v31_payment'),order:fieldVal('v31_order'),ksef:fieldVal('v31_ksef'),bank:fieldVal('v31_bank'),notes:fieldVal('v31_notes'),seller:{name:fieldVal('v31_s_name'),nip:fieldVal('v31_s_nip'),regon:fieldVal('v31_s_regon'),address:fieldVal('v31_s_address'),krs:fieldVal('v31_s_krs'),phone:fieldVal('v31_s_phone'),email:fieldVal('v31_s_email'),web:fieldVal('v31_s_web')},buyer:{name:fieldVal('v31_b_name'),nip:fieldVal('v31_b_nip'),regon:fieldVal('v31_b_regon'),address:fieldVal('v31_b_address'),phone:fieldVal('v31_b_phone'),email:fieldVal('v31_b_email')},rows:V31_ROWS.map(x=>({...x})),createdAt:new Date().toISOString()};
+  return {id:'inv'+Date.now(),type:fieldVal('v31_type')||'final',number:fieldVal('v31_number'),issueDate:fieldVal('v31_issue'),saleDate:fieldVal('v31_sale'),dueDate:fieldVal('v31_due'),payment:fieldVal('v31_payment'),order:fieldVal('v31_order'),ksef:fieldVal('v31_ksef'),bank:fieldVal('v31_bank')||V31_BANK_DEFAULT,notes:fieldVal('v31_notes'),seller:{name:fieldVal('v31_s_name'),nip:fieldVal('v31_s_nip'),regon:fieldVal('v31_s_regon'),address:fieldVal('v31_s_address'),krs:fieldVal('v31_s_krs'),phone:fieldVal('v31_s_phone'),email:fieldVal('v31_s_email'),web:fieldVal('v31_s_web')},buyer:{name:fieldVal('v31_b_name'),nip:fieldVal('v31_b_nip'),regon:fieldVal('v31_b_regon'),address:fieldVal('v31_b_address'),phone:fieldVal('v31_b_phone'),email:fieldVal('v31_b_email')},rows:V31_ROWS.map(x=>({...x})),createdAt:new Date().toISOString()};
 }
 function totalsV31(data){let net=0,vat=0,gross=0;for(const r of data.rows||[]){const q=Number(r.qty)||0,p=Number(r.price)||0,v=Number(r.vat)||0,n=q*p,tx=n*v/100;net+=n;vat+=tx;gross+=n+tx}return{net,vat,gross}}
-function renderRowsV31(){const b=document.getElementById('v31_rows');if(!b)return;b.innerHTML=V31_ROWS.map((r,i)=>{const n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;return `<tr><td>${i+1}</td><td><input data-i="${i}" data-k="name" value="${v31esc(r.name||'')}"></td><td><input data-i="${i}" data-k="qty" type="number" step="0.01" value="${Number(r.qty||0)}"></td><td><input data-i="${i}" data-k="unit" value="${v31esc(r.unit||'szt.')}"></td><td><input data-i="${i}" data-k="price" type="number" step="0.01" value="${Number(r.price||0)}"></td><td><input data-i="${i}" data-k="vat" type="number" step="1" value="${Number(r.vat||23)}"></td><td>${v31money(n)}</td><td>${v31money(tx)}</td><td>${v31money(n+tx)}</td><td><button class="mini" onclick="removeInvoiceRowV31(${i})">×</button></td></tr>`}).join('');b.querySelectorAll('input').forEach(x=>x.addEventListener('input',()=>{const i=Number(x.dataset.i),k=x.dataset.k;V31_ROWS[i][k]=['qty','price','vat'].includes(k)?Number(x.value):x.value;renderRowsV31();renderInvoicePreviewV31()}));const t=totalsV31({rows:V31_ROWS});document.getElementById('v31_total_net').textContent=v31money(t.net);document.getElementById('v31_total_vat').textContent=v31money(t.vat);document.getElementById('v31_total_gross').textContent=v31money(t.gross)}
+function updateTotalsV31(){const t=totalsV31({rows:V31_ROWS});const n=document.getElementById('v31_total_net'),v=document.getElementById('v31_total_vat'),g=document.getElementById('v31_total_gross');if(n)n.textContent=v31money(t.net);if(v)v.textContent=v31money(t.vat);if(g)g.textContent=v31money(t.gross)}
+function updateRowAmountsV31(row,i){const r=V31_ROWS[i]||{},n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;const net=row.querySelector('[data-out="net"]'),vat=row.querySelector('[data-out="vat"]'),gross=row.querySelector('[data-out="gross"]');if(net)net.textContent=v31money(n);if(vat)vat.textContent=v31money(tx);if(gross)gross.textContent=v31money(n+tx);updateTotalsV31()}
+function renderRowsV31(){const b=document.getElementById('v31_rows');if(!b)return;b.innerHTML=V31_ROWS.map((r,i)=>{const n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;return `<tr data-row="${i}"><td>${i+1}</td><td><input data-i="${i}" data-k="name" value="${v31esc(r.name||'')}"></td><td><input data-i="${i}" data-k="qty" type="number" inputmode="decimal" min="0" step="0.01" value="${Number(r.qty||0)}"></td><td><input data-i="${i}" data-k="unit" value="${v31esc(r.unit||'szt.')}"></td><td><input data-i="${i}" data-k="price" type="number" inputmode="decimal" min="0" step="0.01" value="${Number(r.price||0)}"></td><td><input data-i="${i}" data-k="vat" type="number" inputmode="numeric" min="0" step="1" value="${Number(r.vat||23)}"></td><td data-out="net">${v31money(n)}</td><td data-out="vat">${v31money(tx)}</td><td data-out="gross">${v31money(n+tx)}</td><td><button type="button" class="mini" onclick="removeInvoiceRowV31(${i})">×</button></td></tr>`}).join('');b.querySelectorAll('input').forEach(x=>{x.addEventListener('input',()=>{const i=Number(x.dataset.i),k=x.dataset.k;if(!V31_ROWS[i])return;V31_ROWS[i][k]=['qty','price','vat'].includes(k)?(x.value===''?'':Number(x.value)):x.value;updateRowAmountsV31(x.closest('tr'),i);renderInvoicePreviewV31()});x.addEventListener('change',()=>{const i=Number(x.dataset.i),k=x.dataset.k;if(['qty','price','vat'].includes(k)&&x.value===''){V31_ROWS[i][k]=0;x.value='0';updateRowAmountsV31(x.closest('tr'),i);renderInvoicePreviewV31()}})});updateTotalsV31()}
 window.addInvoiceRowV31=()=>{if(V31_ROWS.length>=6)return toast('W tym wzorze MASTER przewidziano maksymalnie 6 pozycji na jednej stronie.');V31_ROWS.push({name:'',qty:1,unit:'szt.',price:0,vat:23});renderRowsV31();renderInvoicePreviewV31()};
 window.removeInvoiceRowV31=i=>{if(V31_ROWS.length<=1)return;V31_ROWS.splice(i,1);renderRowsV31();renderInvoicePreviewV31()};
 
 window.fillBuyerFromClientV31=function(){const idx=Number(document.getElementById('v31_client').value);if(!Number.isInteger(idx))return;const x=v31clients()[idx];if(!x)return;document.getElementById('v31_b_name').value=x.name||'';document.getElementById('v31_b_nip').value=x.nip||'';document.getElementById('v31_b_regon').value=x.regon||'';document.getElementById('v31_b_address').value=x.invoiceAddress||x.delivery||[x.city,'Polska'].filter(Boolean).join(', ');document.getElementById('v31_b_phone').value=x.phone||'';document.getElementById('v31_b_email').value=x.email||'';document.getElementById('v31_status').textContent='✓ Dane klienta uzupełnione automatycznie z bazy KLIENCI.';renderInvoicePreviewV31()};
-window.restoreSellerV31=function(){for(const [k,v] of Object.entries({name:V31_SELLER_DEFAULT.name,nip:V31_SELLER_DEFAULT.nip,regon:V31_SELLER_DEFAULT.regon,address:V31_SELLER_DEFAULT.address,krs:V31_SELLER_DEFAULT.krs,phone:V31_SELLER_DEFAULT.phone,email:V31_SELLER_DEFAULT.email,web:V31_SELLER_DEFAULT.web})){const el=document.getElementById('v31_s_'+k);if(el)el.value=v}renderInvoicePreviewV31();toast('Przywrócono dane L&M Technic Sp. z o.o.')};
+window.restoreSellerV31=function(){for(const [k,v] of Object.entries({name:V31_SELLER_DEFAULT.name,nip:V31_SELLER_DEFAULT.nip,regon:V31_SELLER_DEFAULT.regon,address:V31_SELLER_DEFAULT.address,krs:V31_SELLER_DEFAULT.krs,phone:V31_SELLER_DEFAULT.phone,email:V31_SELLER_DEFAULT.email,web:V31_SELLER_DEFAULT.web})){const el=document.getElementById('v31_s_'+k);if(el)el.value=v}const bank=document.getElementById('v31_bank');if(bank)bank.value=V31_BANK_DEFAULT;renderInvoicePreviewV31();toast('Przywrócono dane L&M Technic Sp. z o.o. i stały rachunek bankowy.')};
 window.lookupSellerMFV31=async function(){const nip=fieldVal('v31_s_nip').replace(/\D/g,''),date=fieldVal('v31_issue')||v31iso();const st=document.getElementById('v31_status');st.textContent='Sprawdzam dane w oficjalnym Wykazie Podatników VAT MF…';try{const r=await fetch(`https://wl-api.mf.gov.pl/api/search/nip/${nip}?date=${date}`,{cache:'no-store'});const j=await r.json();const x=j?.result?.subject;if(!x)throw new Error('Brak danych');document.getElementById('v31_s_name').value=x.name||fieldVal('v31_s_name');document.getElementById('v31_s_regon').value=x.regon||fieldVal('v31_s_regon');document.getElementById('v31_s_krs').value=x.krs||fieldVal('v31_s_krs');document.getElementById('v31_s_address').value=x.workingAddress||x.residenceAddress||fieldVal('v31_s_address');st.textContent=`✓ MF: ${x.statusVat||'status niepodany'} • dane firmy odświeżone.`;renderInvoicePreviewV31()}catch(e){st.textContent='Nie udało się pobrać danych z MF — pozostawiono lokalne dane rejestrowe L&M Technic.';st.classList.add('warn')}};
 
 function setFont(ctx,size,bold=false,color='#111',align='left'){ctx.font=`${bold?'700':'400'} ${size}px Arial`;ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='alphabetic'}
 function fitText(ctx,text,x,y,maxW,size=19,bold=false,color='#111',align='left'){let s=size;setFont(ctx,s,bold,color,align);while(s>10&&ctx.measureText(String(text)).width>maxW){s--;setFont(ctx,s,bold,color,align)}ctx.fillText(String(text||''),x,y)}
 function clearBox(ctx,x,y,w,h,color='#fff'){ctx.fillStyle=color;ctx.fillRect(x,y,w,h)}
+function roundRectV31(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
 async function buildCanvasV31(data,canvas){await loadMasterV31();canvas=canvas||document.createElement('canvas');canvas.width=1122;canvas.height=1402;const c=canvas.getContext('2d');c.drawImage(V31_MASTER_IMG,0,0,1122,1402);
+  // PROFORMA: zatwierdzony MASTER pozostaje bazą; zmieniamy wyłącznie tytuł dokumentu.
+  if(data.type==='proforma'){c.save();roundRectV31(c,355,74,425,92,15);c.fillStyle='rgba(3,42,20,.96)';c.fill();c.lineWidth=2;c.strokeStyle='#d4a129';c.stroke();fitText(c,'FAKTURA PROFORMA',568,132,398,36,true,'#f2b72f','center');c.restore();}
   // numer i daty w nagłówku
   clearBox(c,462,172,199,44,'#052315');c.strokeStyle='#c79525';c.lineWidth=2;c.strokeRect(462,172,199,44);fitText(c,data.number,561,202,185,21,true,'#fff','center');
   [[974,104,v31pl(data.issueDate)],[974,150,v31pl(data.saleDate)],[974,196,v31pl(data.dueDate)]].forEach(([x,y,t])=>{clearBox(c,962,y-22,115,28,'#082316');fitText(c,t,1070,y,108,16,true,'#fff','right')});
@@ -136,7 +143,10 @@ async function buildCanvasV31(data,canvas){await loadMasterV31();canvas=canvas||
   // podsumowanie
   const t=totalsV31(data);clearBox(c,321,935,761,85,'#03371a');c.strokeStyle='#c89c24';c.lineWidth=2;c.strokeRect(321,935,761,85);setFont(c,16,true,'#fff');c.fillText('RAZEM NETTO',408,966);c.fillText('RAZEM VAT',630,966);c.fillText('RAZEM BRUTTO',873,966);setFont(c,22,true,'#f2b72f');c.fillText(v31money(t.net),408,995);c.fillText(v31money(t.vat),630,995);c.fillText(v31money(t.gross),873,995);
   // płatności/uwagi
-  clearBox(c,96,1080,244,42,'#fffdf9');fitText(c,data.payment||'Przelew bankowy',96,1109,240,16,true);clearBox(c,444,1080,285,42,'#fffdf9');fitText(c,data.bank||'—',444,1104,280,14,true);clearBox(c,801,1080,205,42,'#fffdf9');fitText(c,v31pl(data.dueDate),801,1108,190,16,true);clearBox(c,96,1161,950,55,'#fffdf9');fitText(c,data.notes||'',96,1188,930,15);clearBox(c,96,1232,450,30,'#fffdf9');fitText(c,data.order||'—',96,1254,430,15,true);
+  clearBox(c,96,1076,244,48,'#fffdf9');fitText(c,data.payment||'Przelew bankowy',96,1110,240,18,true);
+  // stały rachunek bankowy — mocny niebieski pasek, duży i czytelny numer
+  clearBox(c,438,1072,300,60,'#fffdf9');roundRectV31(c,440,1077,295,43,8);c.fillStyle='#075f91';c.fill();c.lineWidth=2;c.strokeStyle='#1a9ed4';c.stroke();fitText(c,data.bank||V31_BANK_DEFAULT,588,1106,276,15,true,'#fff','center');
+  clearBox(c,801,1076,205,48,'#fffdf9');fitText(c,v31pl(data.dueDate),801,1110,190,18,true);clearBox(c,96,1157,950,61,'#fffdf9');fitText(c,data.notes||'',96,1191,930,17);clearBox(c,96,1228,450,36,'#fffdf9');fitText(c,data.order||'—',96,1254,430,17,true);
   // footer dane + KSeF, QR pozostaje miejscem graficznym
   clearBox(c,238,1282,320,112,'#063018');setFont(c,13,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',245,1303);setFont(c,12,false,'#fff');c.fillText(data.seller.address,245,1322);c.fillText('NIP: '+data.seller.nip+'   REGON: '+data.seller.regon,245,1341);c.fillText(data.seller.phone,245,1360);c.fillText(data.seller.email,245,1379);clearBox(c,604,1322,198,29,'#063018');fitText(c,data.ksef||'—',703,1342,185,14,true,'#f4bd32','center');
   return canvas;
