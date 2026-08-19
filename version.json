@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.9",
-  "build": "2026-08-19T16:12:00+02:00",
-  "notes": "Hotfix dolnej części faktury MASTER. Usunięto wtórne rysowanie zielonego panelu podsumowania i pozostawiono oryginalną ramkę/cień MASTER; generator zmienia tylko trzy kwoty. Skorygowano maski pól płatności, rachunku, terminu, uwag i numeru zamówienia tak, aby nie ucinały etykiet. Pełny numer rachunku jest czytelny także w formularzu. Podpis, pryzma peletu, biały kafelek KSeF, QR i grafika MASTER pozostają bez zmian."
+  "version": "V31.0.10",
+  "build": "2026-08-19T16:55:00+02:00",
+  "notes": "Finalny hotfix overlayów faktury MASTER. Usunięto wtórne nakładanie numeru rachunku bankowego; numer konta pozostaje wyłącznie stałym elementem MASTER. Skorygowano dolne pola tak, aby nie dublować wartości w podsumowaniu, terminie płatności, uwagach i numerze zamówienia. Dla domyślnej formy płatności i domyślnych uwag generator nie rysuje drugiej warstwy tekstu. Zachowano niezmienione: podpis, pryzmę peletu, biały kafelek KSeF, QR i cały footer MASTER."
 }

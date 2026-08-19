@@ -153,6 +153,24 @@ window.lookupSellerMFV31=async function(){const nip=fieldVal('v31_s_nip').replac
 function setFont(ctx,size,bold=false,color='#111',align='left'){ctx.font=`${bold?'700':'400'} ${size}px Arial`;ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='alphabetic'}
 function fitText(ctx,text,x,y,maxW,size=19,bold=false,color='#111',align='left'){let s=size;setFont(ctx,s,bold,color,align);while(s>10&&ctx.measureText(String(text)).width>maxW){s--;setFont(ctx,s,bold,color,align)}ctx.fillText(String(text||''),x,y)}
 function clearBox(ctx,x,y,w,h,color='#fff'){ctx.fillStyle=color;ctx.fillRect(x,y,w,h)}
+function drawWrapV31(ctx,text,x,y,maxW,lineH,size=17,bold=false,color='#111',maxLines=2){
+  const words=String(text||'').split(/\s+/).filter(Boolean);
+  const lines=[];
+  let current='';
+  setFont(ctx,size,bold,color,'left');
+  for(const word of words){
+    const test=current?current+' '+word:word;
+    if(!current || ctx.measureText(test).width<=maxW){
+      current=test;
+    }else{
+      lines.push(current);
+      current=word;
+      if(lines.length>=maxLines-1)break;
+    }
+  }
+  if(current && lines.length<maxLines)lines.push(current);
+  lines.slice(0,maxLines).forEach((line,i)=>ctx.fillText(line,x,y+i*lineH));
+}
 function roundRectV31(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
 async function buildCanvasV31(data,canvas){
   await loadMasterV31();
@@ -231,42 +249,52 @@ async function buildCanvasV31(data,canvas){
     c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1016,y);
   });
 
-  // PODSUMOWANIE — NIE rysujemy drugiego panelu. MASTER ma już idealny panel, ramkę i cień.
-  // Maskujemy wyłącznie trzy przykładowe kwoty i wpisujemy aktualne wartości.
+  // PODSUMOWANIE — korzystamy z oryginalnego panelu MASTER.
+  // Czyścimy wyłącznie strefy wartości (szersze i wyższe niż wcześniej), bez ruszania ikon i obramowań.
   const t=totalsV31(data);
-  clearBox(c,332,824,176,34,'#03371a');
-  clearBox(c,574,824,166,34,'#03371a');
-  clearBox(c,807,824,184,34,'#03371a');
+  clearBox(c,334,821,176,42,'#03371a');
+  clearBox(c,574,821,166,42,'#03371a');
+  clearBox(c,807,821,184,42,'#03371a');
   setFont(c,18,true,'#f2b72f','center');
-  c.fillText(v31money(t.net),420,848);
-  c.fillText(v31money(t.vat),657,848);
-  c.fillText(v31money(t.gross),899,848);
+  c.fillText(v31money(t.net),422,849);
+  c.fillText(v31money(t.vat),657,849);
+  c.fillText(v31money(t.gross),899,849);
 
-  // PŁATNOŚĆ — etykiety MASTER muszą zostać w 100% widoczne.
-  // Czyścimy TYLKO linię wartości pod etykietą, nigdy górną część kafelka.
-  clearBox(c,91,928,210,34,'#fffdf9');
-  fitText(c,data.payment||'Przelew bankowy',96,952,196,19,true,'#111');
+  // FORMA PŁATNOŚCI — jeśli pozostaje domyślny przelew, nie rysujemy nic drugi raz.
+  const paymentText=(data.payment||'Przelew bankowy').trim();
+  if(paymentText && paymentText!=='Przelew bankowy'){
+    clearBox(c,84,925,215,45,'#fffdf9');
+    fitText(c,paymentText,94,955,198,19,true,'#111');
+  }
 
-  // RACHUNEK BANKOWY — pełny, duży, pogrubiony niebieski numer.
-  clearBox(c,329,928,425,34,'#fffdf9');
-  fitText(c,data.bank||V31_BANK_DEFAULT,541,952,410,23,true,'#147fc8','center');
+  // RACHUNEK BANKOWY — numer jest stały i prawidłowo wpisany w MASTERZE.
+  // Zgodnie z decyzją użytkownika nie nakładamy tutaj drugiej warstwy tekstu.
 
-  // TERMIN PŁATNOŚCI — pozostawiamy etykietę i ikonę z MASTER-a.
-  clearBox(c,828,928,176,34,'#fffdf9');
-  fitText(c,v31pl(data.dueDate),839,952,158,19,true,'#111');
+  // TERMIN PŁATNOŚCI — czyścimy pełną strefę wartości, bez etykiety i ikony.
+  clearBox(c,828,926,176,42,'#fffdf9');
+  fitText(c,v31pl(data.dueDate),839,956,158,19,true,'#111');
 
-  // UWAGI — zostawiamy napis „UWAGI” i ikonę. Czyścimy wyłącznie tekst wartości.
-  clearBox(c,91,1007,875,30,'#fffdf9');
-  fitText(c,data.notes||'',98,1029,850,17,true,'#111');
+  // UWAGI — dla domyślnej treści pozostawiamy czysty MASTER. Dla własnej treści czyścimy i rysujemy raz.
+  const defaultNotes='Dziękujemy za zaufanie i zapraszamy do ponownej współpracy.';
+  const notesText=(data.notes||'').trim();
+  if(notesText && notesText!==defaultNotes){
+    clearBox(c,84,994,892,58,'#fffdf9');
+    drawWrapV31(c,notesText,96,1020,860,21,17,true,'#111',2);
+  }
 
-  // NUMER ZAMÓWIENIA — zostawiamy etykietę i ikonę; zmieniamy tylko wartość.
-  // Prawa część z podpisem oraz grafika peletu są nietykalne.
-  clearBox(c,91,1074,493,28,'#fffdf9');
-  fitText(c,data.order||'—',98,1095,470,18,true,'#111');
+  // NUMER ZAMÓWIENIA — gdy pusty, zostawiamy myślnik z MASTER-a.
+  const orderText=(data.order||'').trim();
+  if(orderText && orderText!=='—'){
+    clearBox(c,84,1068,505,40,'#fffdf9');
+    fitText(c,orderText,97,1096,480,18,true,'#111');
+  }
 
   // KSeF — biały kafelek MASTER zostaje biały. Numer czarny na białym tle.
-  clearBox(c,621,1329,128,28,'#fff');
-  fitText(c,data.ksef||'—',685,1350,112,16,true,'#111','center');
+  const ksefText=(data.ksef||'').trim();
+  if(ksefText && ksefText!=='—'){
+    clearBox(c,621,1329,128,28,'#fff');
+    fitText(c,ksefText,685,1350,112,16,true,'#111','center');
+  }
 
   // WAŻNE: nie rysujemy żadnego dodatkowego adresu w stopce.
   // Pryzma peletu, podpis, biały kafelek KSeF, QR i cały footer pozostają z MASTER-a.
@@ -331,9 +359,9 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
   document.head.appendChild(st);
 })();
 
-/* ===== V31.0.9 — CLEAN LOWER MASTER + updater ===== */
+/* ===== V31.0.10 — FINAL OVERLAY HOTFIX + updater ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.9';
+  const HOTFIX_VERSION='V31.0.10';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
@@ -438,7 +466,7 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     const d=document.createElement('div');d.className='v30-settings';
     const installed=v30IsStandalone();
     d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.9 — FAKTURY PREMIUM + ostateczny MASTER faktury, czysty dół bez uciętych etykiet, poprawne podsumowanie, pełny rachunek bankowy i pewny mechanizm aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.10 — FAKTURY PREMIUM + finalny HOTFIX overlayów MASTER: bez podwójnego rachunku bankowego, bez zdublowanych wartości w dolnej sekcji, z czystym podsumowaniem i pewnym mechanizmem aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
       <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
     </div>`;
     app.appendChild(d);
