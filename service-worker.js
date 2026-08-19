@@ -1,8 +1,8 @@
-const APP_VERSION='V31.0.11-SURGICAL-NO-DUPLICATES';
+const APP_VERSION='V31.1.0-RYNKI-EU-LIVE';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
-const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js'];
-const OPTIONAL=['./manifest.webmanifest','./version.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png'];
+const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js','./markets-eu.css','./markets-eu.js'];
+const OPTIONAL=['./manifest.webmanifest','./version.json','./markets-eu.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png'];
 
 async function freshPut(cache,path){
   const sep=path.includes('?')?'&':'?';
@@ -64,6 +64,11 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
+  if(/\/markets-eu\.json$/.test(url.pathname)){
+    event.respondWith(fetch(req,{cache:'no-store'}).then(async r=>{if(r&&r.ok){const c=await caches.open(CACHE);c.put('./markets-eu.json',r.clone());}return r;}).catch(()=>serveLocal('./markets-eu.json',req)));
+    return;
+  }
+
   if(req.mode==='navigate'){
     event.respondWith(serveLocal('./index.html',req));
     return;
@@ -74,6 +79,8 @@ self.addEventListener('fetch',event=>{
   else if(/\/invoice-v31\.js$/.test(url.pathname))local='./invoice-v31.js';
   else if(/\/invoice-v31\.css$/.test(url.pathname))local='./invoice-v31.css';
   else if(/\/invoice-master\.png$/.test(url.pathname))local='./invoice-master.png';
+  else if(/\/markets-eu\.js$/.test(url.pathname))local='./markets-eu.js';
+  else if(/\/markets-eu\.css$/.test(url.pathname))local='./markets-eu.css';
   if(local){
     event.respondWith(serveLocal(local,req));
     return;
