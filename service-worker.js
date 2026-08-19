@@ -1,4 +1,4 @@
-const APP_VERSION='V31.0.2';
+const APP_VERSION='V31.0.3';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const CORE=['./','./index.html','./manifest.webmanifest','./version.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png','./LM_Technic_Energy_Biznesplan_i_materialy_MASTER_25_kart.pdf','./invoice-master.png','./invoice-v31.css','./invoice-v31.js'];
 

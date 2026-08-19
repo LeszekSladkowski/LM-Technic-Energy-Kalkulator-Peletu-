@@ -20,6 +20,10 @@ let V31_ROWS=[];
 let V31_CURRENT_BLOB_URL='';
 const V31_OLD_PREVIEW=window.previewHistoryPdfV28;
 const V31_OLD_HISTORY_ROWS=window.historyRowsV26;
+let V31_PREVIEW_TIMER=0;
+
+function queuePreviewV31(delay=60){clearTimeout(V31_PREVIEW_TIMER);V31_PREVIEW_TIMER=setTimeout(()=>window.renderInvoicePreviewV31?.(),delay)}
+function v31num(v){const s=String(v??'').replace(/\s+/g,'').replace(',', '.').replace(/[^0-9.\-]/g,'');const n=parseFloat(s);return Number.isFinite(n)?n:0}
 
 function v31esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function v31money(n){return Number(n||0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' PLN'}
@@ -103,7 +107,7 @@ window.renderInvoicesV20=function(){
   document.getElementById('v31_client').addEventListener('change',fillBuyerFromClientV31);
   document.getElementById('v31_type').addEventListener('change',()=>{const t=document.getElementById('v31_type').value;document.getElementById('v31_number').value=v31nextNo(t,document.getElementById('v31_issue').value);renderInvoicePreviewV31()});
   document.getElementById('v31_issue').addEventListener('change',()=>{const issueDate=document.getElementById('v31_issue').value||v31iso();document.getElementById('v31_number').value=v31nextNo(document.getElementById('v31_type').value,issueDate);document.getElementById('v31_due').value=v31addDays(issueDate,V31_DUE_DAYS);renderInvoicePreviewV31()});
-  d.querySelectorAll('input,select,textarea').forEach(el=>el.addEventListener('input',renderInvoicePreviewV31));
+  d.querySelectorAll('input,select,textarea').forEach(el=>{el.addEventListener('input',()=>queuePreviewV31(80));el.addEventListener('change',()=>queuePreviewV31(10));});
   renderRowsV31();loadMasterV31().then(renderInvoicePreviewV31);window.scrollTo({top:0,left:0,behavior:'auto'});
 };
 
@@ -112,10 +116,33 @@ function fieldVal(id){return document.getElementById(id)?.value?.trim?.()||''}
 function collectInvoiceV31(){
   return {id:'inv'+Date.now(),type:fieldVal('v31_type')||'final',number:fieldVal('v31_number'),issueDate:fieldVal('v31_issue'),saleDate:fieldVal('v31_sale'),dueDate:fieldVal('v31_due'),payment:fieldVal('v31_payment'),order:fieldVal('v31_order'),ksef:fieldVal('v31_ksef'),bank:fieldVal('v31_bank')||V31_BANK_DEFAULT,notes:fieldVal('v31_notes'),seller:{name:fieldVal('v31_s_name'),nip:fieldVal('v31_s_nip'),regon:fieldVal('v31_s_regon'),address:fieldVal('v31_s_address'),krs:fieldVal('v31_s_krs'),phone:fieldVal('v31_s_phone'),email:fieldVal('v31_s_email'),web:fieldVal('v31_s_web')},buyer:{name:fieldVal('v31_b_name'),nip:fieldVal('v31_b_nip'),regon:fieldVal('v31_b_regon'),address:fieldVal('v31_b_address'),phone:fieldVal('v31_b_phone'),email:fieldVal('v31_b_email')},rows:V31_ROWS.map(x=>({...x})),createdAt:new Date().toISOString()};
 }
-function totalsV31(data){let net=0,vat=0,gross=0;for(const r of data.rows||[]){const q=Number(r.qty)||0,p=Number(r.price)||0,v=Number(r.vat)||0,n=q*p,tx=n*v/100;net+=n;vat+=tx;gross+=n+tx}return{net,vat,gross}}
+function totalsV31(data){let net=0,vat=0,gross=0;for(const r of data.rows||[]){const q=v31num(r.qty),p=v31num(r.price),v=v31num(r.vat),n=q*p,tx=n*v/100;net+=n;vat+=tx;gross+=n+tx}return{net,vat,gross}}
 function updateTotalsV31(){const t=totalsV31({rows:V31_ROWS});const n=document.getElementById('v31_total_net'),v=document.getElementById('v31_total_vat'),g=document.getElementById('v31_total_gross');if(n)n.textContent=v31money(t.net);if(v)v.textContent=v31money(t.vat);if(g)g.textContent=v31money(t.gross)}
-function updateRowAmountsV31(row,i){const r=V31_ROWS[i]||{},n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;const net=row.querySelector('[data-out="net"]'),vat=row.querySelector('[data-out="vat"]'),gross=row.querySelector('[data-out="gross"]');if(net)net.textContent=v31money(n);if(vat)vat.textContent=v31money(tx);if(gross)gross.textContent=v31money(n+tx);updateTotalsV31()}
-function renderRowsV31(){const b=document.getElementById('v31_rows');if(!b)return;b.innerHTML=V31_ROWS.map((r,i)=>{const n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;return `<tr data-row="${i}"><td>${i+1}</td><td><input data-i="${i}" data-k="name" value="${v31esc(r.name||'')}"></td><td><input data-i="${i}" data-k="qty" type="number" inputmode="decimal" min="0" step="0.01" value="${Number(r.qty||0)}"></td><td><input data-i="${i}" data-k="unit" value="${v31esc(r.unit||'szt.')}"></td><td><input data-i="${i}" data-k="price" type="number" inputmode="decimal" min="0" step="0.01" value="${Number(r.price||0)}"></td><td><input data-i="${i}" data-k="vat" type="number" inputmode="numeric" min="0" step="1" value="${Number(r.vat||23)}"></td><td data-out="net">${v31money(n)}</td><td data-out="vat">${v31money(tx)}</td><td data-out="gross">${v31money(n+tx)}</td><td><button type="button" class="mini" onclick="removeInvoiceRowV31(${i})">×</button></td></tr>`}).join('');b.querySelectorAll('input').forEach(x=>{x.addEventListener('input',()=>{const i=Number(x.dataset.i),k=x.dataset.k;if(!V31_ROWS[i])return;V31_ROWS[i][k]=['qty','price','vat'].includes(k)?(x.value===''?'':Number(x.value)):x.value;updateRowAmountsV31(x.closest('tr'),i);renderInvoicePreviewV31()});x.addEventListener('change',()=>{const i=Number(x.dataset.i),k=x.dataset.k;if(['qty','price','vat'].includes(k)&&x.value===''){V31_ROWS[i][k]=0;x.value='0';updateRowAmountsV31(x.closest('tr'),i);renderInvoicePreviewV31()}})});updateTotalsV31()}
+function updateRowAmountsV31(row,i){const r=V31_ROWS[i]||{},n=v31num(r.qty)*v31num(r.price),tx=n*v31num(r.vat)/100;const net=row.querySelector('[data-out="net"]'),vat=row.querySelector('[data-out="vat"]'),gross=row.querySelector('[data-out="gross"]');if(net)net.textContent=v31money(n);if(vat)vat.textContent=v31money(tx);if(gross)gross.textContent=v31money(n+tx);updateTotalsV31()}
+function renderRowsV31(){
+  const b=document.getElementById('v31_rows');
+  if(!b)return;
+  b.innerHTML=V31_ROWS.map((r,i)=>{
+    const n=v31num(r.qty)*v31num(r.price),tx=n*v31num(r.vat)/100;
+    return `<tr data-row="${i}"><td>${i+1}</td><td><input data-i="${i}" data-k="name" value="${v31esc(r.name||'')}"></td><td><input data-i="${i}" data-k="qty" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="${v31esc(String(r.qty??1))}"></td><td><input data-i="${i}" data-k="unit" value="${v31esc(r.unit||'szt.')}"></td><td><input data-i="${i}" data-k="price" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="${v31esc(String(r.price??0))}"></td><td><input data-i="${i}" data-k="vat" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" value="${v31esc(String(r.vat??23))}"></td><td data-out="net">${v31money(n)}</td><td data-out="vat">${v31money(tx)}</td><td data-out="gross">${v31money(n+tx)}</td><td><button type="button" class="mini" onclick="removeInvoiceRowV31(${i})">×</button></td></tr>`
+  }).join('');
+  b.querySelectorAll('input').forEach(x=>{
+    const sync=()=>{
+      const i=Number(x.dataset.i),k=x.dataset.k;
+      if(!V31_ROWS[i])return;
+      V31_ROWS[i][k]=['qty','price','vat'].includes(k)?v31num(x.value):x.value;
+      updateRowAmountsV31(x.closest('tr'),i);
+      queuePreviewV31(30);
+    };
+    x.addEventListener('input',sync);
+    x.addEventListener('change',sync);
+    x.addEventListener('blur',sync);
+    x.addEventListener('focus',()=>{
+      if(['qty','price','vat'].includes(x.dataset.k))requestAnimationFrame(()=>x.select?.());
+    });
+  });
+  updateTotalsV31();
+}
 window.addInvoiceRowV31=()=>{if(V31_ROWS.length>=6)return toast('W tym wzorze MASTER przewidziano maksymalnie 6 pozycji na jednej stronie.');V31_ROWS.push({name:'',qty:1,unit:'szt.',price:0,vat:23});renderRowsV31();renderInvoicePreviewV31()};
 window.removeInvoiceRowV31=i=>{if(V31_ROWS.length<=1)return;V31_ROWS.splice(i,1);renderRowsV31();renderInvoicePreviewV31()};
 
@@ -139,16 +166,18 @@ async function buildCanvasV31(data,canvas){await loadMasterV31();canvas=canvas||
   clearBox(c,593,342,482,239,'#fffdf9');fitText(c,data.buyer.name||'—',603,391,450,22,true);fitText(c,data.buyer.address||'—',603,434,450,18);fitText(c,'NIP: '+(data.buyer.nip||'—'),603,478,215,18);fitText(c,'REGON: '+(data.buyer.regon||'—'),825,478,225,18);fitText(c,'Tel.: '+(data.buyer.phone||'—'),603,518,215,17);fitText(c,'E-mail: '+(data.buyer.email||'—'),825,518,225,17);
   // tabela - zachowujemy oryginalny nagłówek, czyścimy tylko wiersze
   clearBox(c,23,690,1074,236,'#fffdf9');c.strokeStyle='#ead8ae';c.lineWidth=1;const xs=[23,82,302,397,497,620,694,839,969,1097];for(const x of xs)c.beginPath(),c.moveTo(x,690),c.lineTo(x,926),c.stroke();for(let y=690;y<=926;y+=59)c.beginPath(),c.moveTo(23,y),c.lineTo(1097,y),c.stroke();
-  const rows=(data.rows||[]).filter(r=>String(r.name||'').trim()).slice(0,4);rows.forEach((r,i)=>{const y=727+i*59,n=(Number(r.qty)||0)*(Number(r.price)||0),tx=n*(Number(r.vat)||0)/100;setFont(c,16,false,'#111','center');c.fillText(String(i+1),52,y);fitText(c,r.name,101,y,190,16,true);setFont(c,16,false,'#111','center');c.fillText(Number(r.qty||0).toLocaleString('pl-PL',{maximumFractionDigits:2}),350,y);c.fillText(r.unit||'',447,y);setFont(c,16,false,'#111','right');c.fillText(Number(r.price||0).toLocaleString('pl-PL',{minimumFractionDigits:2}),606,y);c.fillText(String(Number(r.vat||0)),667,y);c.fillText(n.toLocaleString('pl-PL',{minimumFractionDigits:2}),825,y);c.fillText(tx.toLocaleString('pl-PL',{minimumFractionDigits:2}),957,y);c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2}),1083,y)});
+  const rows=(data.rows||[]).filter(r=>String(r.name||'').trim()).slice(0,4);rows.forEach((r,i)=>{const y=727+i*59,n=v31num(r.qty)*v31num(r.price),tx=n*v31num(r.vat)/100;setFont(c,16,false,'#111','center');c.fillText(String(i+1),52,y);fitText(c,r.name,101,y,190,16,true);setFont(c,16,false,'#111','center');c.fillText(v31num(r.qty).toLocaleString('pl-PL',{maximumFractionDigits:2}),350,y);c.fillText(r.unit||'',447,y);setFont(c,16,false,'#111','right');c.fillText(v31num(r.price).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),606,y);c.fillText(String(v31num(r.vat)),667,y);c.fillText(n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),825,y);c.fillText(tx.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),957,y);c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1083,y)});
   // podsumowanie
   const t=totalsV31(data);clearBox(c,321,935,761,85,'#03371a');c.strokeStyle='#c89c24';c.lineWidth=2;c.strokeRect(321,935,761,85);setFont(c,16,true,'#fff');c.fillText('RAZEM NETTO',408,966);c.fillText('RAZEM VAT',630,966);c.fillText('RAZEM BRUTTO',873,966);setFont(c,22,true,'#f2b72f');c.fillText(v31money(t.net),408,995);c.fillText(v31money(t.vat),630,995);c.fillText(v31money(t.gross),873,995);
   // płatności/uwagi
-  clearBox(c,96,1076,244,48,'#fffdf9');fitText(c,data.payment||'Przelew bankowy',96,1110,240,18,true);
-  // stały rachunek bankowy — mocny niebieski pasek, duży i czytelny numer
-  clearBox(c,438,1072,300,60,'#fffdf9');roundRectV31(c,440,1077,295,43,8);c.fillStyle='#075f91';c.fill();c.lineWidth=2;c.strokeStyle='#1a9ed4';c.stroke();fitText(c,data.bank||V31_BANK_DEFAULT,588,1106,276,15,true,'#fff','center');
-  clearBox(c,801,1076,205,48,'#fffdf9');fitText(c,v31pl(data.dueDate),801,1110,190,18,true);clearBox(c,96,1157,950,61,'#fffdf9');fitText(c,data.notes||'',96,1191,930,17);clearBox(c,96,1228,450,36,'#fffdf9');fitText(c,data.order||'—',96,1254,430,17,true);
+  clearBox(c,96,1072,244,56,'#fffdf9');fitText(c,data.payment||'Przelew bankowy',96,1108,240,22,true);
+  // stały rachunek bankowy — bez paska, sama pogrubiona niebieska czcionka o dużym rozmiarze
+  clearBox(c,430,1070,318,60,'#fffdf9');setFont(c,24,true,'#1687d8','center');fitText(c,data.bank||V31_BANK_DEFAULT,589,1108,302,24,true,'#1687d8','center');
+  clearBox(c,800,1072,210,56,'#fffdf9');fitText(c,v31pl(data.dueDate),801,1108,194,22,true);
+  clearBox(c,96,1155,950,66,'#fffdf9');fitText(c,data.notes||'',96,1194,930,19,true,'#111');
+  clearBox(c,96,1226,450,40,'#fffdf9');fitText(c,data.order||'—',96,1254,430,18,true);
   // footer dane + KSeF, QR pozostaje miejscem graficznym
-  clearBox(c,238,1282,320,112,'#063018');setFont(c,13,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',245,1303);setFont(c,12,false,'#fff');c.fillText(data.seller.address,245,1322);c.fillText('NIP: '+data.seller.nip+'   REGON: '+data.seller.regon,245,1341);c.fillText(data.seller.phone,245,1360);c.fillText(data.seller.email,245,1379);clearBox(c,604,1322,198,29,'#063018');fitText(c,data.ksef||'—',703,1342,185,14,true,'#f4bd32','center');
+  clearBox(c,238,1282,320,112,'#063018');setFont(c,13,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',245,1303);setFont(c,12,false,'#fff');c.fillText(data.seller.address,245,1322);c.fillText('NIP: '+data.seller.nip+'   REGON: '+data.seller.regon,245,1341);c.fillText(data.seller.phone,245,1360);c.fillText(data.seller.email,245,1379);clearBox(c,604,1318,198,33,'#063018');fitText(c,data.ksef||'—',703,1343,185,16,true,'#f4bd32','center');
   return canvas;
 }
 window.renderInvoicePreviewV31=async function(){const c=document.getElementById('v31_canvas');if(!c)return;try{await buildCanvasV31(collectInvoiceV31(),c)}catch(e){const st=document.getElementById('v31_status');if(st)st.textContent='Nie udało się wczytać grafiki MASTER.'}};
