@@ -262,9 +262,9 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
   document.head.appendChild(st);
 })();
 
-/* ===== V31.0.4 HOTFIX — updater without replacing huge index.html ===== */
+/* ===== V31.0.7 FINAL — updater + MASTER invoice ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.6';
+  const HOTFIX_VERSION='V31.0.7';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
@@ -369,7 +369,7 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     const d=document.createElement('div');d.className='v30-settings';
     const installed=v30IsStandalone();
     d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.6 — FAKTURY PREMIUM + czytelny dół faktury, większe dane płatności i rachunku bankowego, poprawione pola liczbowe oraz pewny start offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.7 — FAKTURY PREMIUM + ostateczny MASTER faktury, czytelny dół dokumentu, poprawione pola liczbowe oraz pewny mechanizm aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
       <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
     </div>`;
     app.appendChild(d);
