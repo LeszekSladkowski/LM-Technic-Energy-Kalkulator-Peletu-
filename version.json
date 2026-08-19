@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.4",
-  "build": "2026-08-19T11:50:00+02:00",
-  "notes": "Naprawiony start aplikacji online/offline: aplikacja uruchamia się z lokalnej kopii bez czekania na sieć. Naprawiony mechanizm aktualizacji Service Workera, bezpieczny fallback bez kasowania danych lokalnych. Zachowane poprawki V31.0.3 faktur, przeliczeń i czytelności rachunku bankowego."
+  "version": "V31.0.6",
+  "build": "2026-08-19T12:46:00+02:00",
+  "notes": "Czytelny dół faktury PDF: większe pola Forma płatności, Rachunek bankowy, Termin płatności, Uwagi, Numer zamówienia oraz większe dane spółki w stopce. Numer rachunku pozostaje pogrubiony i niebieski bez paska. Zachowane poprawki pól liczbowych V31.0.5 i bezpieczny start online/offline V31.0.4."
 }

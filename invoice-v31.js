@@ -169,15 +169,39 @@ async function buildCanvasV31(data,canvas){await loadMasterV31();canvas=canvas||
   const rows=(data.rows||[]).filter(r=>String(r.name||'').trim()).slice(0,4);rows.forEach((r,i)=>{const y=727+i*59,n=v31num(r.qty)*v31num(r.price),tx=n*v31num(r.vat)/100;setFont(c,16,false,'#111','center');c.fillText(String(i+1),52,y);fitText(c,r.name,101,y,190,16,true);setFont(c,16,false,'#111','center');c.fillText(v31num(r.qty).toLocaleString('pl-PL',{maximumFractionDigits:2}),350,y);c.fillText(r.unit||'',447,y);setFont(c,16,false,'#111','right');c.fillText(v31num(r.price).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),606,y);c.fillText(String(v31num(r.vat)),667,y);c.fillText(n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),825,y);c.fillText(tx.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),957,y);c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1083,y)});
   // podsumowanie
   const t=totalsV31(data);clearBox(c,321,935,761,85,'#03371a');c.strokeStyle='#c89c24';c.lineWidth=2;c.strokeRect(321,935,761,85);setFont(c,16,true,'#fff');c.fillText('RAZEM NETTO',408,966);c.fillText('RAZEM VAT',630,966);c.fillText('RAZEM BRUTTO',873,966);setFont(c,22,true,'#f2b72f');c.fillText(v31money(t.net),408,995);c.fillText(v31money(t.vat),630,995);c.fillText(v31money(t.gross),873,995);
-  // płatności/uwagi
-  clearBox(c,96,1072,244,56,'#fffdf9');fitText(c,data.payment||'Przelew bankowy',96,1108,240,22,true);
-  // stały rachunek bankowy — bez paska, sama pogrubiona niebieska czcionka o dużym rozmiarze
-  clearBox(c,430,1070,318,60,'#fffdf9');setFont(c,24,true,'#1687d8','center');fitText(c,data.bank||V31_BANK_DEFAULT,589,1108,302,24,true,'#1687d8','center');
-  clearBox(c,800,1072,210,56,'#fffdf9');fitText(c,v31pl(data.dueDate),801,1108,194,22,true);
-  clearBox(c,96,1155,950,66,'#fffdf9');fitText(c,data.notes||'',96,1194,930,19,true,'#111');
-  clearBox(c,96,1226,450,40,'#fffdf9');fitText(c,data.order||'—',96,1254,430,18,true);
-  // footer dane + KSeF, QR pozostaje miejscem graficznym
-  clearBox(c,238,1282,320,112,'#063018');setFont(c,13,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',245,1303);setFont(c,12,false,'#fff');c.fillText(data.seller.address,245,1322);c.fillText('NIP: '+data.seller.nip+'   REGON: '+data.seller.regon,245,1341);c.fillText(data.seller.phone,245,1360);c.fillText(data.seller.email,245,1379);clearBox(c,604,1318,198,33,'#063018');fitText(c,data.ksef||'—',703,1343,185,16,true,'#f4bd32','center');
+  // płatności/uwagi — V31.0.6: dół faktury ma być czytelny także na ekranie telefonu
+  // Czyścimy WYŁĄCZNIE pola danych wewnątrz zatwierdzonego MASTER-a i nanosimy większą typografię.
+  clearBox(c,86,1044,265,88,'#fffdf9');
+  setFont(c,17,true,'#1b1b1b');c.fillText('FORMA PŁATNOŚCI',96,1068);
+  fitText(c,data.payment||'Przelew bankowy',96,1106,245,25,true,'#111');
+
+  // Rachunek bankowy: szerokie pole, duża pogrubiona niebieska czcionka, bez niebieskiego paska.
+  clearBox(c,365,1044,430,88,'#fffdf9');
+  setFont(c,17,true,'#1b1b1b');c.fillText('RACHUNEK BANKOWY',382,1068);
+  fitText(c,data.bank||V31_BANK_DEFAULT,580,1108,405,23,true,'#147fc8','center');
+
+  clearBox(c,805,1044,258,88,'#fffdf9');
+  setFont(c,17,true,'#1b1b1b');c.fillText('TERMIN PŁATNOŚCI',818,1068);
+  fitText(c,v31pl(data.dueDate),818,1108,225,25,true,'#111');
+
+  clearBox(c,86,1138,978,78,'#fffdf9');
+  setFont(c,17,true,'#1b1b1b');c.fillText('UWAGI',96,1162);
+  fitText(c,data.notes||'',96,1198,945,22,true,'#111');
+
+  clearBox(c,86,1212,485,58,'#fffdf9');
+  setFont(c,16,true,'#1b1b1b');c.fillText('NUMER ZAMÓWIENIA',96,1234);
+  fitText(c,data.order||'—',96,1261,450,22,true,'#111');
+
+  // Footer: dane spółki w 3 większych, czytelnych wierszach. QR i podpis pozostają nietknięte.
+  clearBox(c,228,1274,355,123,'#063018');
+  setFont(c,16,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',240,1302);
+  fitText(c,data.seller.address,240,1328,330,14,false,'#fff');
+  fitText(c,'NIP: '+data.seller.nip+'  •  REGON: '+data.seller.regon,240,1352,330,13,true,'#fff');
+  fitText(c,data.seller.phone+'  •  '+data.seller.email,240,1377,330,14,true,'#fff');
+
+  // KSeF — większy numer w przeznaczonym polu; etykieta i podpis z MASTER-a zostają.
+  clearBox(c,596,1304,222,50,'#063018');
+  fitText(c,data.ksef||'—',707,1342,205,19,true,'#f4bd32','center');
   return canvas;
 }
 window.renderInvoicePreviewV31=async function(){const c=document.getElementById('v31_canvas');if(!c)return;try{await buildCanvasV31(collectInvoiceV31(),c)}catch(e){const st=document.getElementById('v31_status');if(st)st.textContent='Nie udało się wczytać grafiki MASTER.'}};
@@ -206,9 +230,41 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
 })();
 
 
+/* ===== V31.0.6 — CZYTELNY DÓŁ PDF + V31.0.5 CZYTELNE POLA LICZBOWE ===== */
+(function v3105InvoiceNumberFieldsFix(){
+  const STYLE_ID='v31_0_5_number_fields_fix';
+  if(document.getElementById(STYLE_ID))return;
+  const st=document.createElement('style');
+  st.id=STYLE_ID;
+  st.textContent=`
+    .v31-items{width:100%!important;min-width:940px!important;table-layout:fixed!important}
+    .v31-items th,.v31-items td{box-sizing:border-box!important}
+    .v31-items th:nth-child(1),.v31-items td:nth-child(1){width:35px!important}
+    .v31-items th:nth-child(2),.v31-items td:nth-child(2){width:220px!important}
+    .v31-items th:nth-child(3),.v31-items td:nth-child(3){width:75px!important;min-width:75px!important}
+    .v31-items th:nth-child(4),.v31-items td:nth-child(4){width:65px!important;min-width:65px!important}
+    .v31-items th:nth-child(5),.v31-items td:nth-child(5){width:100px!important;min-width:100px!important}
+    .v31-items th:nth-child(6),.v31-items td:nth-child(6){width:70px!important;min-width:70px!important}
+    .v31-items th:nth-child(7),.v31-items td:nth-child(7){width:110px!important;min-width:110px!important}
+    .v31-items th:nth-child(8),.v31-items td:nth-child(8){width:100px!important;min-width:100px!important}
+    .v31-items th:nth-child(9),.v31-items td:nth-child(9){width:115px!important;min-width:115px!important}
+    .v31-items th:nth-child(10),.v31-items td:nth-child(10){width:50px!important;min-width:50px!important}
+    .v31-items input,.v31-items select{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:5px 6px!important}
+    .v31-items input[data-k="qty"],.v31-items input[data-k="price"],.v31-items input[data-k="vat"]{
+      font-size:18px!important;font-weight:900!important;line-height:1.15!important;text-align:center!important;
+      font-variant-numeric:tabular-nums!important;letter-spacing:0!important;overflow:visible!important
+    }
+    .v31-items input[data-k="qty"]{padding-left:4px!important;padding-right:4px!important}
+    .v31-items input[data-k="price"]{padding-left:4px!important;padding-right:4px!important}
+    .v31-items td[data-out]{font-size:14px!important;font-weight:900!important;white-space:nowrap!important;padding-left:6px!important;padding-right:6px!important}
+    .v31-items-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  `;
+  document.head.appendChild(st);
+})();
+
 /* ===== V31.0.4 HOTFIX — updater without replacing huge index.html ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.4';
+  const HOTFIX_VERSION='V31.0.6';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
@@ -313,7 +369,7 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     const d=document.createElement('div');d.className='v30-settings';
     const installed=v30IsStandalone();
     d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.4 — FAKTURY PREMIUM + pewny start offline/online i naprawiony mechanizm aktualizacji. Zachowane poprawki przeliczeń oraz czytelnego rachunku bankowego bez niebieskiego paska.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.6 — FAKTURY PREMIUM + czytelny dół faktury, większe dane płatności i rachunku bankowego, poprawione pola liczbowe oraz pewny start offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
       <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
     </div>`;
     app.appendChild(d);
