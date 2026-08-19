@@ -1,4 +1,4 @@
-const APP_VERSION='V31.0.7-FINAL2';
+const APP_VERSION='V31.0.8-FINAL-MASTER';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
 const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js'];

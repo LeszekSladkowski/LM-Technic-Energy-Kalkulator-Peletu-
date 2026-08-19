@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.7",
-  "build": "2026-08-19T15:27:00+02:00",
-  "notes": "Hotfix mechanizmu aktualizacji V31.0.7. Generator zachowuje bez zmian zatwierdzony FINAL MASTER faktury. Poprawiono numer wersji w module FAKTURY PREMIUM oraz wymuszono pobranie nowego rdzenia aplikacji przed aktywacją Service Workera."
+  "version": "V31.0.8",
+  "build": "2026-08-19T15:46:00+02:00",
+  "notes": "Krytyczny hotfix generatora faktury: usunięto podwójne nakładanie danych na MASTER. Tytuł PROFORMA nie jest dublowany; poprawiono pozycje sprzedawcy i nabywcy, tabelę, podsumowanie, płatność, rachunek bankowy, termin, uwagi i numer zamówienia. Usunięto dodatkową zieloną ramkę z danymi spółki w stopce. Pryzma peletu, podpis Leszka Śladkowskiego, biały kafelek KSeF, QR i zatwierdzona grafika MASTER pozostają nietknięte."
 }

@@ -154,54 +154,123 @@ function setFont(ctx,size,bold=false,color='#111',align='left'){ctx.font=`${bold
 function fitText(ctx,text,x,y,maxW,size=19,bold=false,color='#111',align='left'){let s=size;setFont(ctx,s,bold,color,align);while(s>10&&ctx.measureText(String(text)).width>maxW){s--;setFont(ctx,s,bold,color,align)}ctx.fillText(String(text||''),x,y)}
 function clearBox(ctx,x,y,w,h,color='#fff'){ctx.fillStyle=color;ctx.fillRect(x,y,w,h)}
 function roundRectV31(ctx,x,y,w,h,r){const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath()}
-async function buildCanvasV31(data,canvas){await loadMasterV31();canvas=canvas||document.createElement('canvas');canvas.width=1122;canvas.height=1402;const c=canvas.getContext('2d');c.drawImage(V31_MASTER_IMG,0,0,1122,1402);
-  // PROFORMA: zatwierdzony MASTER pozostaje bazą; zmieniamy wyłącznie tytuł dokumentu.
-  if(data.type==='proforma'){c.save();roundRectV31(c,355,74,425,92,15);c.fillStyle='rgba(3,42,20,.96)';c.fill();c.lineWidth=2;c.strokeStyle='#d4a129';c.stroke();fitText(c,'FAKTURA PROFORMA',568,132,398,36,true,'#f2b72f','center');c.restore();}
-  // numer i daty w nagłówku
-  clearBox(c,462,172,199,44,'#052315');c.strokeStyle='#c79525';c.lineWidth=2;c.strokeRect(462,172,199,44);fitText(c,data.number,561,202,185,21,true,'#fff','center');
-  [[974,104,v31pl(data.issueDate)],[974,150,v31pl(data.saleDate)],[974,196,v31pl(data.dueDate)]].forEach(([x,y,t])=>{clearBox(c,962,y-22,115,28,'#082316');fitText(c,t,1070,y,108,16,true,'#fff','right')});
-  // sprzedawca
-  clearBox(c,43,342,500,239,'#fffdf9');fitText(c,data.seller.short||'L&M Technic Sp. z o.o.',57,391,455,22,true);fitText(c,data.seller.address,57,434,455,18);fitText(c,'NIP: '+data.seller.nip,57,478,215,18);fitText(c,'REGON: '+data.seller.regon,284,478,240,18);fitText(c,'KRS: '+data.seller.krs,57,518,220,17);fitText(c,'Tel.: '+data.seller.phone,284,518,240,17);fitText(c,'E-mail: '+data.seller.email,57,557,455,17);
-  // nabywca
-  clearBox(c,593,342,482,239,'#fffdf9');fitText(c,data.buyer.name||'—',603,391,450,22,true);fitText(c,data.buyer.address||'—',603,434,450,18);fitText(c,'NIP: '+(data.buyer.nip||'—'),603,478,215,18);fitText(c,'REGON: '+(data.buyer.regon||'—'),825,478,225,18);fitText(c,'Tel.: '+(data.buyer.phone||'—'),603,518,215,17);fitText(c,'E-mail: '+(data.buyer.email||'—'),825,518,225,17);
-  // tabela - zachowujemy oryginalny nagłówek, czyścimy tylko wiersze
-  clearBox(c,23,690,1074,236,'#fffdf9');c.strokeStyle='#ead8ae';c.lineWidth=1;const xs=[23,82,302,397,497,620,694,839,969,1097];for(const x of xs)c.beginPath(),c.moveTo(x,690),c.lineTo(x,926),c.stroke();for(let y=690;y<=926;y+=59)c.beginPath(),c.moveTo(23,y),c.lineTo(1097,y),c.stroke();
-  const rows=(data.rows||[]).filter(r=>String(r.name||'').trim()).slice(0,4);rows.forEach((r,i)=>{const y=727+i*59,n=v31num(r.qty)*v31num(r.price),tx=n*v31num(r.vat)/100;setFont(c,16,false,'#111','center');c.fillText(String(i+1),52,y);fitText(c,r.name,101,y,190,16,true);setFont(c,16,false,'#111','center');c.fillText(v31num(r.qty).toLocaleString('pl-PL',{maximumFractionDigits:2}),350,y);c.fillText(r.unit||'',447,y);setFont(c,16,false,'#111','right');c.fillText(v31num(r.price).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),606,y);c.fillText(String(v31num(r.vat)),667,y);c.fillText(n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),825,y);c.fillText(tx.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),957,y);c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1083,y)});
-  // podsumowanie
-  const t=totalsV31(data);clearBox(c,321,935,761,85,'#03371a');c.strokeStyle='#c89c24';c.lineWidth=2;c.strokeRect(321,935,761,85);setFont(c,16,true,'#fff');c.fillText('RAZEM NETTO',408,966);c.fillText('RAZEM VAT',630,966);c.fillText('RAZEM BRUTTO',873,966);setFont(c,22,true,'#f2b72f');c.fillText(v31money(t.net),408,995);c.fillText(v31money(t.vat),630,995);c.fillText(v31money(t.gross),873,995);
-  // płatności/uwagi — V31.0.6: dół faktury ma być czytelny także na ekranie telefonu
-  // Czyścimy WYŁĄCZNIE pola danych wewnątrz zatwierdzonego MASTER-a i nanosimy większą typografię.
-  clearBox(c,86,1044,265,88,'#fffdf9');
-  setFont(c,17,true,'#1b1b1b');c.fillText('FORMA PŁATNOŚCI',96,1068);
-  fitText(c,data.payment||'Przelew bankowy',96,1106,245,25,true,'#111');
+async function buildCanvasV31(data,canvas){
+  await loadMasterV31();
+  canvas=canvas||document.createElement('canvas');
+  canvas.width=1122; canvas.height=1402;
+  const c=canvas.getContext('2d');
+  c.drawImage(V31_MASTER_IMG,0,0,1122,1402);
 
-  // Rachunek bankowy: szerokie pole, duża pogrubiona niebieska czcionka, bez niebieskiego paska.
-  clearBox(c,365,1044,430,88,'#fffdf9');
-  setFont(c,17,true,'#1b1b1b');c.fillText('RACHUNEK BANKOWY',382,1068);
-  fitText(c,data.bank||V31_BANK_DEFAULT,580,1108,405,23,true,'#147fc8','center');
+  // V31.0.8 — MASTER pozostaje nienaruszony. Czyścimy wyłącznie pola z przykładowymi
+  // danymi widocznymi na grafice i nanosimy jeden komplet danych dynamicznych.
 
-  clearBox(c,805,1044,258,88,'#fffdf9');
-  setFont(c,17,true,'#1b1b1b');c.fillText('TERMIN PŁATNOŚCI',818,1068);
-  fitText(c,v31pl(data.dueDate),818,1108,225,25,true,'#111');
+  // Tytuł: MASTER jest PROFORMA. Dla PROFORMA nic nie dokładamy (brak duplikatu).
+  // Dla faktury VAT podmieniamy wyłącznie wnętrze kafelka tytułu.
+  if(data.type!=='proforma'){
+    c.save();
+    roundRectV31(c,368,22,379,72,13);
+    c.fillStyle='rgba(3,42,20,.98)'; c.fill();
+    c.lineWidth=2; c.strokeStyle='#d4a129'; c.stroke();
+    fitText(c,'FAKTURA VAT',557,69,350,34,true,'#f2b72f','center');
+    c.restore();
+  }
 
-  clearBox(c,86,1138,978,78,'#fffdf9');
-  setFont(c,17,true,'#1b1b1b');c.fillText('UWAGI',96,1162);
-  fitText(c,data.notes||'',96,1198,945,22,true,'#111');
+  // Numer dokumentu — dokładnie w istniejącym polu.
+  clearBox(c,443,108,198,40,'#052315');
+  c.strokeStyle='#c79525'; c.lineWidth=2; c.strokeRect(443,108,198,40);
+  fitText(c,data.number,542,136,184,19,true,'#fff','center');
 
-  clearBox(c,86,1212,485,58,'#fffdf9');
-  setFont(c,16,true,'#1b1b1b');c.fillText('NUMER ZAMÓWIENIA',96,1234);
-  fitText(c,data.order||'—',96,1261,450,22,true,'#111');
+  // Daty — tylko wartości, bez naruszania ikon i podpisów.
+  [[60,v31pl(data.issueDate)],[111,v31pl(data.saleDate)],[161,v31pl(data.dueDate)]].forEach(([y,t])=>{
+    clearBox(c,900,y-20,126,31,'#082316');
+    fitText(c,t,1014,y+1,112,15,true,'#fff','right');
+  });
 
-  // Footer: dane spółki w 3 większych, czytelnych wierszach. QR i podpis pozostają nietknięte.
-  clearBox(c,228,1274,355,123,'#063018');
-  setFont(c,16,true,'#fff');c.fillText('L&M Technic Sp. z o.o.',240,1302);
-  fitText(c,data.seller.address,240,1328,330,14,false,'#fff');
-  fitText(c,'NIP: '+data.seller.nip+'  •  REGON: '+data.seller.regon,240,1352,330,13,true,'#fff');
-  fitText(c,data.seller.phone+'  •  '+data.seller.email,240,1377,330,14,true,'#fff');
+  // SPRZEDAWCA — czyścimy całe białe wnętrze i rysujemy raz.
+  clearBox(c,36,267,458,212,'#fffdf9');
+  fitText(c,data.seller.short||'L&M Technic Sp. z o.o.',48,302,430,19,true);
+  fitText(c,data.seller.address,48,345,430,17);
+  fitText(c,'NIP: '+data.seller.nip,48,389,210,17);
+  fitText(c,'REGON: '+data.seller.regon,279,389,206,17);
+  fitText(c,'KRS: '+data.seller.krs,48,427,210,16);
+  fitText(c,'Tel.: '+data.seller.phone,279,427,206,16);
+  fitText(c,'E-mail: '+data.seller.email,48,466,430,16);
 
-  // KSeF — większy numer w przeznaczonym polu; etykieta i podpis z MASTER-a zostają.
-  clearBox(c,596,1304,222,50,'#063018');
-  fitText(c,data.ksef||'—',707,1342,205,19,true,'#f4bd32','center');
+  // NABYWCA / ODBIORCA — czyścimy całe białe wnętrze i rysujemy raz.
+  clearBox(c,540,267,458,212,'#fffdf9');
+  fitText(c,data.buyer.name||'—',552,302,430,19,true);
+  fitText(c,data.buyer.address||'—',552,345,430,17);
+  fitText(c,'NIP: '+(data.buyer.nip||'—'),552,389,210,17);
+  fitText(c,'REGON: '+(data.buyer.regon||'—'),779,389,205,17);
+  fitText(c,'Tel.: '+(data.buyer.phone||'—'),552,427,210,16);
+  fitText(c,'E-mail: '+(data.buyer.email||'—'),779,427,204,15);
+
+  // TABELA — nagłówek MASTER pozostaje. Usuwamy przykładowy wiersz i nanosimy dane.
+  clearBox(c,24,586,1004,212,'#fffdf9');
+  c.strokeStyle='#ead8ae'; c.lineWidth=1;
+  const xs=[23,75,287,366,465,584,650,790,910,1028];
+  const ys=[585,637,691,745,799];
+  for(const x of xs){c.beginPath();c.moveTo(x,585);c.lineTo(x,799);c.stroke();}
+  for(const y of ys){c.beginPath();c.moveTo(23,y);c.lineTo(1028,y);c.stroke();}
+
+  const rows=(data.rows||[]).filter(r=>String(r.name||'').trim()).slice(0,4);
+  rows.forEach((r,i)=>{
+    const y=615+i*54;
+    const n=v31num(r.qty)*v31num(r.price), tx=n*v31num(r.vat)/100;
+    setFont(c,15,false,'#111','center'); c.fillText(String(i+1),49,y);
+    fitText(c,r.name,87,y,190,14,true,'#111','left');
+    setFont(c,15,false,'#111','center');
+    c.fillText(v31num(r.qty).toLocaleString('pl-PL',{maximumFractionDigits:2}),326,y);
+    c.fillText(r.unit||'',415,y);
+    setFont(c,15,false,'#111','right');
+    c.fillText(v31num(r.price).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),570,y);
+    setFont(c,15,false,'#111','center'); c.fillText(String(v31num(r.vat)),617,y);
+    setFont(c,15,false,'#111','right');
+    c.fillText(n.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),778,y);
+    c.fillText(tx.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),898,y);
+    c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1016,y);
+  });
+
+  // PODSUMOWANIE — w dokładnym miejscu oryginalnego zielonego panelu.
+  const t=totalsV31(data);
+  clearBox(c,292,790,711,80,'#03371a');
+  c.strokeStyle='#c89c24'; c.lineWidth=2; c.strokeRect(292,790,711,80);
+  c.strokeStyle='rgba(120,150,90,.45)'; c.lineWidth=1;
+  c.beginPath();c.moveTo(543,798);c.lineTo(543,860);c.stroke();
+  c.beginPath();c.moveTo(771,798);c.lineTo(771,860);c.stroke();
+  setFont(c,14,true,'#fff','center');
+  c.fillText('RAZEM NETTO',418,818); c.fillText('RAZEM VAT',657,818); c.fillText('RAZEM BRUTTO',885,818);
+  setFont(c,18,true,'#f2b72f','center');
+  c.fillText(v31money(t.net),418,847); c.fillText(v31money(t.vat),657,847); c.fillText(v31money(t.gross),885,847);
+
+  // PŁATNOŚĆ — podmieniamy tylko wartości. Etykiety i ikony MASTER pozostają.
+  clearBox(c,91,919,210,47,'#fffdf9');
+  fitText(c,data.payment||'Przelew bankowy',96,951,196,19,true,'#111');
+
+  // RACHUNEK BANKOWY — duży, pogrubiony niebieski numer bez niebieskiego paska.
+  clearBox(c,329,919,425,47,'#fffdf9');
+  fitText(c,data.bank||V31_BANK_DEFAULT,541,951,410,23,true,'#147fc8','center');
+
+  clearBox(c,828,919,176,47,'#fffdf9');
+  fitText(c,v31pl(data.dueDate),839,951,158,19,true,'#111');
+  c.strokeStyle='#ead8ae'; c.lineWidth=1;
+  c.beginPath();c.moveTo(23,966);c.lineTo(1009,966);c.stroke();
+
+  // UWAGI — jeden wiersz, bez dublowania.
+  clearBox(c,91,997,875,41,'#fffdf9');
+  fitText(c,data.notes||'',98,1026,850,17,true,'#111');
+  c.strokeStyle='#ead8ae'; c.beginPath();c.moveTo(23,1038);c.lineTo(1009,1038);c.stroke();
+
+  // NUMER ZAMÓWIENIA — tylko lewa część. Podpis i grafika peletu są nietykalne.
+  clearBox(c,91,1061,493,43,'#fffdf9');
+  fitText(c,data.order||'—',98,1092,470,18,true,'#111');
+
+  // KSeF — biały kafelek MASTER zostaje biały. Numer czarny na białym tle.
+  clearBox(c,621,1329,128,28,'#fff');
+  fitText(c,data.ksef||'—',685,1350,112,16,true,'#111','center');
+
+  // WAŻNE: nie rysujemy żadnego dodatkowego adresu w stopce.
+  // Pryzma peletu, podpis, biały kafelek KSeF, QR i cały footer pozostają z MASTER-a.
   return canvas;
 }
 window.renderInvoicePreviewV31=async function(){const c=document.getElementById('v31_canvas');if(!c)return;try{await buildCanvasV31(collectInvoiceV31(),c)}catch(e){const st=document.getElementById('v31_status');if(st)st.textContent='Nie udało się wczytać grafiki MASTER.'}};
@@ -262,9 +331,9 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
   document.head.appendChild(st);
 })();
 
-/* ===== V31.0.7 FINAL — updater + MASTER invoice ===== */
+/* ===== V31.0.8 — FINAL MASTER overlay alignment + updater ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.7';
+  const HOTFIX_VERSION='V31.0.8';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
