@@ -198,10 +198,15 @@ async function buildCanvasV31(data,canvas){
   c.strokeStyle='#c79525'; c.lineWidth=2; c.strokeRect(443,108,198,40);
   fitText(c,data.number,542,136,184,19,true,'#fff','center');
 
-  // Daty — tylko wartości, bez naruszania ikon i podpisów.
+  // Daty — V31.0.11: chirurgiczna podmiana WYŁĄCZNIE cyfr.
+  // Nie przykrywamy już etykiet „Data wystawienia / Data sprzedaży / Termin płatności”.
   [[60,v31pl(data.issueDate)],[111,v31pl(data.saleDate)],[161,v31pl(data.dueDate)]].forEach(([y,t])=>{
-    clearBox(c,900,y-20,126,31,'#082316');
-    fitText(c,t,1014,y+1,112,15,true,'#fff','right');
+    const g=c.createLinearGradient(0,y-15,0,y+7);
+    g.addColorStop(0,'#061d0c');
+    g.addColorStop(1,'#011807');
+    c.fillStyle=g;
+    c.fillRect(922,y-13,107,21);
+    fitText(c,t,1020,y+1,96,15,true,'#fff','right');
   });
 
   // SPRZEDAWCA — czyścimy całe białe wnętrze i rysujemy raz.
@@ -249,44 +254,55 @@ async function buildCanvasV31(data,canvas){
     c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1016,y);
   });
 
-  // PODSUMOWANIE — korzystamy z oryginalnego panelu MASTER.
-  // Czyścimy wyłącznie strefy wartości (szersze i wyższe niż wcześniej), bez ruszania ikon i obramowań.
+  // PODSUMOWANIE — V31.0.11: usuwamy TYLKO stare cyfry z MASTER-a.
+  // Białe etykiety RAZEM NETTO / VAT / BRUTTO i złote ramki pozostają nietknięte.
+  // Kolor maski jest dopasowany do faktycznego ciemnozielonego wnętrza panelu,
+  // dlatego nie powstają już jasne prostokątne „nakładki”.
   const t=totalsV31(data);
-  clearBox(c,334,821,176,42,'#03371a');
-  clearBox(c,574,821,166,42,'#03371a');
-  clearBox(c,807,821,184,42,'#03371a');
+  const totalMask=(x,w)=>{
+    const g=c.createLinearGradient(0,832,0,870);
+    g.addColorStop(0,'#01240c');
+    g.addColorStop(1,'#001d08');
+    c.fillStyle=g; c.fillRect(x,832,w,38);
+  };
+  totalMask(334,176);
+  totalMask(574,166);
+  totalMask(807,184);
   setFont(c,18,true,'#f2b72f','center');
-  c.fillText(v31money(t.net),422,849);
-  c.fillText(v31money(t.vat),657,849);
-  c.fillText(v31money(t.gross),899,849);
+  c.fillText(v31money(t.net),422,856);
+  c.fillText(v31money(t.vat),657,856);
+  c.fillText(v31money(t.gross),899,856);
 
   // FORMA PŁATNOŚCI — jeśli pozostaje domyślny przelew, nie rysujemy nic drugi raz.
+  // Dla innej formy podmieniamy tylko wiersz wartości, nigdy etykietę.
   const paymentText=(data.payment||'Przelew bankowy').trim();
   if(paymentText && paymentText!=='Przelew bankowy'){
-    clearBox(c,84,925,215,45,'#fffdf9');
-    fitText(c,paymentText,94,955,198,19,true,'#111');
+    clearBox(c,94,937,205,27,'#fffdf9');
+    fitText(c,paymentText,96,958,198,19,true,'#111');
   }
 
   // RACHUNEK BANKOWY — numer jest stały i prawidłowo wpisany w MASTERZE.
   // Zgodnie z decyzją użytkownika nie nakładamy tutaj drugiej warstwy tekstu.
 
-  // TERMIN PŁATNOŚCI — czyścimy pełną strefę wartości, bez etykiety i ikony.
-  clearBox(c,828,926,176,42,'#fffdf9');
-  fitText(c,v31pl(data.dueDate),839,956,158,19,true,'#111');
+  // TERMIN PŁATNOŚCI — V31.0.11: wyłącznie cyfry daty. Etykieta i ikona zostają z MASTER-a.
+  clearBox(c,845,939,166,29,'#fffdf9');
+  fitText(c,v31pl(data.dueDate),858,963,150,19,true,'#111');
 
-  // UWAGI — dla domyślnej treści pozostawiamy czysty MASTER. Dla własnej treści czyścimy i rysujemy raz.
+  // UWAGI — dla domyślnej treści pozostawiamy MASTER.
+  // Dla własnej treści podmieniamy tylko treść pod etykietą „UWAGI”.
   const defaultNotes='Dziękujemy za zaufanie i zapraszamy do ponownej współpracy.';
   const notesText=(data.notes||'').trim();
   if(notesText && notesText!==defaultNotes){
-    clearBox(c,84,994,892,58,'#fffdf9');
-    drawWrapV31(c,notesText,96,1020,860,21,17,true,'#111',2);
+    clearBox(c,96,1014,880,39,'#fffdf9');
+    drawWrapV31(c,notesText,98,1035,858,20,17,true,'#111',2);
   }
 
-  // NUMER ZAMÓWIENIA — gdy pusty, zostawiamy myślnik z MASTER-a.
+  // NUMER ZAMÓWIENIA — V31.0.11: etykieta pozostaje nietknięta.
+  // Podmieniamy tylko myślnik / wartość w dolnej linii.
   const orderText=(data.order||'').trim();
   if(orderText && orderText!=='—'){
-    clearBox(c,84,1068,505,40,'#fffdf9');
-    fitText(c,orderText,97,1096,480,18,true,'#111');
+    clearBox(c,96,1085,493,27,'#fffdf9');
+    fitText(c,orderText,98,1106,480,18,true,'#111');
   }
 
   // KSeF — biały kafelek MASTER zostaje biały. Numer czarny na białym tle.
@@ -359,9 +375,9 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
   document.head.appendChild(st);
 })();
 
-/* ===== V31.0.10 — FINAL OVERLAY HOTFIX + updater ===== */
+/* ===== V31.0.11 — SURGICAL NO-DUPLICATES HOTFIX + updater ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.10';
+  const HOTFIX_VERSION='V31.0.11';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
@@ -466,7 +482,7 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     const d=document.createElement('div');d.className='v30-settings';
     const installed=v30IsStandalone();
     d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.10 — FAKTURY PREMIUM + finalny HOTFIX overlayów MASTER: bez podwójnego rachunku bankowego, bez zdublowanych wartości w dolnej sekcji, z czystym podsumowaniem i pewnym mechanizmem aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.11 — FAKTURY PREMIUM + chirurgiczny HOTFIX MASTER: daty, podsumowanie, termin płatności, uwagi i numer zamówienia podmieniane wyłącznie w polach wartości; bez zasłaniania etykiet i bez nakładania wartości na wartości. Rachunek bankowy pozostaje wyłącznie stałym elementem MASTER.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
       <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
     </div>`;
     app.appendChild(d);
