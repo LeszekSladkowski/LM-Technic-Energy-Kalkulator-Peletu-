@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.6",
-  "build": "2026-08-19T12:46:00+02:00",
-  "notes": "Czytelny dół faktury PDF: większe pola Forma płatności, Rachunek bankowy, Termin płatności, Uwagi, Numer zamówienia oraz większe dane spółki w stopce. Numer rachunku pozostaje pogrubiony i niebieski bez paska. Zachowane poprawki pól liczbowych V31.0.5 i bezpieczny start online/offline V31.0.4."
+  "version": "V31.0.7",
+  "build": "2026-08-19T14:20:00+02:00",
+  "notes": "Finalny MASTER faktury został podłączony do generatora FAKTURY PREMIUM. Zastąpiono invoice-master.png zatwierdzoną ostateczną grafiką z białym kafelkiem NUMER KSeF, czarnym opisem, czarnymi liniami i podpisem: Leszek Śladkowski, Prezes Zarządu, L&M TECHNIC. Zachowano czytelny dół faktury oraz poprawki offline/online i pól liczbowych."
 }
