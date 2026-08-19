@@ -204,3 +204,124 @@ window.previewHistoryPdfV28=function(ref){if(String(ref||'').startsWith('inv31:'
 window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='function'?getHistoryV26():[]).filter(x=>x.type===type);if(!rows.length)return `<tr><td class="empty" colspan="7">Brak dokumentów PDF w tej kategorii.</td></tr>`;return rows.map(x=>{const d=new Date(x.createdAt),date=d.toLocaleDateString('pl-PL'),time=d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}),inv=String(x.ref||'').startsWith('inv31:'),biz=x.ref==='bizplan_master_25_v27';let preview,download;if(inv){preview=`<button class="v28-action preview" onclick="previewInvoiceRecordV31('${v31esc(x.ref)}')">👁 PODGLĄD PDF</button>`;download=`<button class="v28-action download" onclick="downloadInvoiceRecordV31('${v31esc(x.ref)}')">⬇ POBIERZ PDF</button>`}else if(biz){preview=`<button class="v28-action preview" onclick="previewHistoryPdfV28('${v31esc(x.ref)}')">👁 PODGLĄD PDF</button>`;download=`<button class="v28-action download" onclick="downloadBizPlanPdfV24()">⬇ POBIERZ PDF</button>`}else{preview=`<button class="v28-action details" onclick="previewHistoryPdfV28('${v31esc(x.ref||'')}')">PODGLĄD</button>`;download='<button class="v28-action details">SZCZEGÓŁY</button>'}return `<tr><td>${date}</td><td>${time}</td><td><div class="v28-doc-name">${v31esc(x.filename||'Dokument PDF')}</div></td><td>${v31esc(x.sentTo||'—')}</td><td><span class="v28-status">${v31esc(x.status||'WYGENEROWANO')}</span></td><td>${preview}</td><td>${download}</td></tr>`}).join('')};
 
 })();
+
+
+/* ===== V31.0.4 HOTFIX — updater without replacing huge index.html ===== */
+(function(){
+  const HOTFIX_VERSION='V31.0.4';
+
+  v30GetRegistration=async function(){
+    if(!('serviceWorker' in navigator))return null;
+    try{
+      let reg=await navigator.serviceWorker.getRegistration('./');
+      if(!reg)reg=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});
+      return reg;
+    }catch(e){return null;}
+  };
+
+  async function hfServerVersion(){
+    const r=await fetch('./version.json?ts='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error('version http '+r.status);
+    return await r.json();
+  }
+
+  function hfWaitWorker(reg,timeout=22000){
+    return new Promise(resolve=>{
+      let done=false;
+      const finish=(w)=>{if(done)return;done=true;clearTimeout(timer);resolve(w||null)};
+      const inspect=()=>{
+        if(reg.waiting)return finish(reg.waiting);
+        const sw=reg.installing;
+        if(sw){
+          if(sw.state==='installed')return finish(reg.waiting||sw);
+          if(sw.state==='redundant')return finish(null);
+          sw.addEventListener('statechange',()=>{
+            if(sw.state==='installed')finish(reg.waiting||sw);
+            else if(sw.state==='redundant')finish(null);
+          });
+        }
+      };
+      const timer=setTimeout(()=>finish(reg.waiting||null),timeout);
+      reg.addEventListener('updatefound',inspect,{once:true});
+      inspect();
+    });
+  }
+
+  v30CheckUpdate=async function(showToast=true){
+    if(location.protocol==='file:' || location.protocol==='content:'){
+      if(showToast)v30ActionStatus('Aktualizacje działają po otwarciu aplikacji z adresu HTTPS.');
+      return false;
+    }
+    try{
+      if(showToast)v30ActionStatus('Sprawdzam wersję na serwerze…');
+      const [reg,info]=await Promise.all([v30GetRegistration(),hfServerVersion()]);
+      if(!reg){if(showToast)v30ActionStatus('Service Worker nie jest aktywny — odśwież aplikację i spróbuj ponownie.');return false;}
+      const newer=!!(info.version && info.version!==HOTFIX_VERSION);
+      if(newer){
+        try{await reg.update();}catch(e){}
+        V30_updateReady=true;
+        if(showToast)v30ActionStatus('Dostępna wersja '+info.version+'. Naciśnij UAKTUALNIJ APLIKACJĘ.');
+        return true;
+      }
+      if(reg.waiting){
+        V30_updateReady=true;
+        if(showToast)v30ActionStatus('Nowa wersja jest już pobrana. Naciśnij UAKTUALNIJ APLIKACJĘ.');
+        return true;
+      }
+      if(showToast)v30ActionStatus('Masz najnowszą wersję '+HOTFIX_VERSION+'.');
+      return false;
+    }catch(e){
+      if(showToast)v30ActionStatus('Nie udało się sprawdzić wersji — sprawdź połączenie z internetem.');
+      return false;
+    }
+  };
+
+  v30UpdateNow=async function(){
+    if(location.protocol==='file:' || location.protocol==='content:'){
+      v30ActionStatus('Aktualizacja wymaga wersji uruchomionej z HTTPS.');return;
+    }
+    v30ActionStatus('Pobieram nową wersję… nie zamykaj aplikacji.');
+    const reg=await v30GetRegistration();
+    if(!reg){v30ActionStatus('Brak aktywnego mechanizmu aktualizacji.');return;}
+    try{
+      const info=await hfServerVersion();
+      if(info.version===HOTFIX_VERSION && !reg.waiting){
+        // Nawet gdy numer wersji się zgadza, wymuszamy sprawdzenie SW — hotfix może mieć ten sam numer publiczny.
+        try{await reg.update();}catch(e){}
+      }else{
+        await reg.update();
+      }
+      let worker=reg.waiting || await hfWaitWorker(reg,22000);
+      worker=reg.waiting || worker;
+      if(worker){
+        v30ActionStatus('Nowa wersja pobrana. Aktywuję ją teraz…');
+        let reloaded=false;
+        const reload=()=>{if(reloaded)return;reloaded=true;location.reload();};
+        navigator.serviceWorker.addEventListener('controllerchange',reload,{once:true});
+        try{worker.postMessage({type:'SKIP_WAITING'});}catch(e){}
+        setTimeout(reload,1800);
+        return;
+      }
+      v30ActionStatus('Masz najnowszą wersję '+HOTFIX_VERSION+'.');
+    }catch(e){
+      v30ActionStatus('Aktualizacja nie została dokończona. Dane aplikacji są bezpieczne — spróbuj ponownie.');
+    }
+  };
+
+  renderSettingsV30=function(){
+    const app=document.getElementById('app');app.innerHTML='';
+    const d=document.createElement('div');d.className='v30-settings';
+    const installed=v30IsStandalone();
+    d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.4 — FAKTURY PREMIUM + pewny start offline/online i naprawiony mechanizm aktualizacji. Zachowane poprawki przeliczeń oraz czytelnego rachunku bankowego bez niebieskiego paska.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
+    </div>`;
+    app.appendChild(d);
+    const bind=(id,fn)=>{const el=document.getElementById(id);if(el){el.onclick=null;el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();fn();},{passive:false});}};
+    bind('v30_install_btn',v30Install);
+    bind('v30_update_btn',v30UpdateNow);
+    bind('v30_check_btn',()=>v30CheckUpdate(true));
+    bind('v30_refresh_btn',v30RefreshApp);
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+  };
+})();
