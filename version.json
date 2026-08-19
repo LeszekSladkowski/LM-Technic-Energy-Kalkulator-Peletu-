@@ -1,5 +1,5 @@
 {
-  "version": "V31.0.3",
-  "build": "2026-08-19T10:55:00+02:00",
-  "notes": "FAKTURY PREMIUM V31.0.3: pewniejsze przeliczanie ilości/ceny/VAT po każdej zmianie, czytelniejszy dół dokumentu, rachunek bankowy jako duża pogrubiona niebieska czcionka bez niebieskiego paska, poprawiony LIVE/PDF i odświeżony cache Service Workera."
+  "version": "V31.0.4",
+  "build": "2026-08-19T11:50:00+02:00",
+  "notes": "Naprawiony start aplikacji online/offline: aplikacja uruchamia się z lokalnej kopii bez czekania na sieć. Naprawiony mechanizm aktualizacji Service Workera, bezpieczny fallback bez kasowania danych lokalnych. Zachowane poprawki V31.0.3 faktur, przeliczeń i czytelności rachunku bankowego."
 }
