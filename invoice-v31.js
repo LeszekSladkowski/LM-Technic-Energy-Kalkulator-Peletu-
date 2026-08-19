@@ -231,39 +231,38 @@ async function buildCanvasV31(data,canvas){
     c.fillText((n+tx).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}),1016,y);
   });
 
-  // PODSUMOWANIE — w dokładnym miejscu oryginalnego zielonego panelu.
+  // PODSUMOWANIE — NIE rysujemy drugiego panelu. MASTER ma już idealny panel, ramkę i cień.
+  // Maskujemy wyłącznie trzy przykładowe kwoty i wpisujemy aktualne wartości.
   const t=totalsV31(data);
-  clearBox(c,292,790,711,80,'#03371a');
-  c.strokeStyle='#c89c24'; c.lineWidth=2; c.strokeRect(292,790,711,80);
-  c.strokeStyle='rgba(120,150,90,.45)'; c.lineWidth=1;
-  c.beginPath();c.moveTo(543,798);c.lineTo(543,860);c.stroke();
-  c.beginPath();c.moveTo(771,798);c.lineTo(771,860);c.stroke();
-  setFont(c,14,true,'#fff','center');
-  c.fillText('RAZEM NETTO',418,818); c.fillText('RAZEM VAT',657,818); c.fillText('RAZEM BRUTTO',885,818);
+  clearBox(c,332,824,176,34,'#03371a');
+  clearBox(c,574,824,166,34,'#03371a');
+  clearBox(c,807,824,184,34,'#03371a');
   setFont(c,18,true,'#f2b72f','center');
-  c.fillText(v31money(t.net),418,847); c.fillText(v31money(t.vat),657,847); c.fillText(v31money(t.gross),885,847);
+  c.fillText(v31money(t.net),420,848);
+  c.fillText(v31money(t.vat),657,848);
+  c.fillText(v31money(t.gross),899,848);
 
-  // PŁATNOŚĆ — podmieniamy tylko wartości. Etykiety i ikony MASTER pozostają.
-  clearBox(c,91,919,210,47,'#fffdf9');
-  fitText(c,data.payment||'Przelew bankowy',96,951,196,19,true,'#111');
+  // PŁATNOŚĆ — etykiety MASTER muszą zostać w 100% widoczne.
+  // Czyścimy TYLKO linię wartości pod etykietą, nigdy górną część kafelka.
+  clearBox(c,91,928,210,34,'#fffdf9');
+  fitText(c,data.payment||'Przelew bankowy',96,952,196,19,true,'#111');
 
-  // RACHUNEK BANKOWY — duży, pogrubiony niebieski numer bez niebieskiego paska.
-  clearBox(c,329,919,425,47,'#fffdf9');
-  fitText(c,data.bank||V31_BANK_DEFAULT,541,951,410,23,true,'#147fc8','center');
+  // RACHUNEK BANKOWY — pełny, duży, pogrubiony niebieski numer.
+  clearBox(c,329,928,425,34,'#fffdf9');
+  fitText(c,data.bank||V31_BANK_DEFAULT,541,952,410,23,true,'#147fc8','center');
 
-  clearBox(c,828,919,176,47,'#fffdf9');
-  fitText(c,v31pl(data.dueDate),839,951,158,19,true,'#111');
-  c.strokeStyle='#ead8ae'; c.lineWidth=1;
-  c.beginPath();c.moveTo(23,966);c.lineTo(1009,966);c.stroke();
+  // TERMIN PŁATNOŚCI — pozostawiamy etykietę i ikonę z MASTER-a.
+  clearBox(c,828,928,176,34,'#fffdf9');
+  fitText(c,v31pl(data.dueDate),839,952,158,19,true,'#111');
 
-  // UWAGI — jeden wiersz, bez dublowania.
-  clearBox(c,91,997,875,41,'#fffdf9');
-  fitText(c,data.notes||'',98,1026,850,17,true,'#111');
-  c.strokeStyle='#ead8ae'; c.beginPath();c.moveTo(23,1038);c.lineTo(1009,1038);c.stroke();
+  // UWAGI — zostawiamy napis „UWAGI” i ikonę. Czyścimy wyłącznie tekst wartości.
+  clearBox(c,91,1007,875,30,'#fffdf9');
+  fitText(c,data.notes||'',98,1029,850,17,true,'#111');
 
-  // NUMER ZAMÓWIENIA — tylko lewa część. Podpis i grafika peletu są nietykalne.
-  clearBox(c,91,1061,493,43,'#fffdf9');
-  fitText(c,data.order||'—',98,1092,470,18,true,'#111');
+  // NUMER ZAMÓWIENIA — zostawiamy etykietę i ikonę; zmieniamy tylko wartość.
+  // Prawa część z podpisem oraz grafika peletu są nietykalne.
+  clearBox(c,91,1074,493,28,'#fffdf9');
+  fitText(c,data.order||'—',98,1095,470,18,true,'#111');
 
   // KSeF — biały kafelek MASTER zostaje biały. Numer czarny na białym tle.
   clearBox(c,621,1329,128,28,'#fff');
@@ -327,13 +326,14 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     .v31-items input[data-k="price"]{padding-left:4px!important;padding-right:4px!important}
     .v31-items td[data-out]{font-size:14px!important;font-weight:900!important;white-space:nowrap!important;padding-left:6px!important;padding-right:6px!important}
     .v31-items-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+    .v31-bank-field input{font-size:14px!important;font-weight:900!important;letter-spacing:-.15px!important;padding-left:8px!important;padding-right:8px!important;white-space:nowrap!important}
   `;
   document.head.appendChild(st);
 })();
 
-/* ===== V31.0.8 — FINAL MASTER overlay alignment + updater ===== */
+/* ===== V31.0.9 — CLEAN LOWER MASTER + updater ===== */
 (function(){
-  const HOTFIX_VERSION='V31.0.8';
+  const HOTFIX_VERSION='V31.0.9';
 
   v30GetRegistration=async function(){
     if(!('serviceWorker' in navigator))return null;
@@ -438,7 +438,7 @@ window.historyRowsV26=function(type){const rows=(typeof getHistoryV26==='functio
     const d=document.createElement('div');d.className='v30-settings';
     const installed=v30IsStandalone();
     d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.7 — FAKTURY PREMIUM + ostateczny MASTER faktury, czytelny dół dokumentu, poprawione pola liczbowe oraz pewny mechanizm aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
+      <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.0.9 — FAKTURY PREMIUM + ostateczny MASTER faktury, czysty dół bez uciętych etykiet, poprawne podsumowanie, pełny rachunek bankowy i pewny mechanizm aktualizacji offline/online.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${HOTFIX_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
       <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
     </div>`;
     app.appendChild(d);
