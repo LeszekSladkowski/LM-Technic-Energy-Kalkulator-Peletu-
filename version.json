@@ -1,5 +1,5 @@
 {
   "version": "V31.1.0",
-  "build": "2026-08-20T00:34:00+02:00",
-  "notes": "RYNKI EU LIVE. Przycisk RYNKI EU na Pulpicie jest aktywny i otwiera zatwierdzony zielono-złoty moduł bazy kontrahentów z podziałem na kraje: Polska, Niemcy, Czechy, Słowacja, Austria i Szwajcaria. Każdy kraj ma dużą flagę, liczniki, wyszukiwarkę, filtry Klienci/Dostawcy, heraldyczne oznaczenie miasta oraz duże przyciski Telefon, Mapa i Szczegóły. Dane są pobierane z markets-eu.json przy otwarciu i mogą być aktualizowane codziennie bez zmiany całej aplikacji. FAKTURY MASTER V31.0.11 pozostają funkcjonalnie bez zmian."
+  "build": "2026-08-20T06:40:00+02:00",
+  "notes": "RYNKI EU LIVE. Aktywowany zatwierdzony kafel RYNKI EU bez zmiany grafiki PULPITU MASTER. Dodano żywy ekran krajów i karty krajowe w zatwierdzonym stylu premium: duże flagi, wyszukiwarka, filtry KLIENCI/DOSTAWCY, duże przyciski telefonu/mapy/szczegółów, automatyczne pobieranie centralnego pliku contractors-eu.json, pamięć offline i aktualizację danych bez przebudowy aplikacji. Faktury pozostają na zatwierdzonym silniku V31.0.11 bez zmian graficznych MASTER."
 }
