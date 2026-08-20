@@ -1,4 +1,4 @@
-/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.0 — 20.08.2026 */
+/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.1 — 20.08.2026 */
 (function(){
 'use strict';
 const STATUS_KEY='lm_eu_crm_status_v32';

@@ -1,5 +1,5 @@
 {
-  "version": "V31.2.0",
-  "build": "2026-08-20T12:58:00+02:00",
-  "notes": "STATUS FIRMY CRM MASTER: duży pasek statusu, pełna tabela, laserowe kolory akcji (telefon zielony, mapa niebieska, szczegóły czerwone, generuj ofertę żółto-pomarańczowe), jasny panel danych firmy, wiadomości specjalne od asystenta, trwałe statusy CRM oraz automatyczne przenoszenie KLIENT ZATWIERDZONY do tabeli KLIENCI i DOSTAWCA ZATWIERDZONY do tabeli DOSTAWCY. Generator oferty otwiera się z wybraną firmą. Pozostałe moduły bez zmian."
+  "version": "V31.2.1",
+  "build": "2026-08-20T13:45:00+02:00",
+  "notes": "STATUS FIRMY CRM MASTER + poprawka aktualizatora: ujednolicony numer wersji w index.html, invoice-v31.js, version.json i Service Worker. Dzięki temu ekran USTAWIENIA nie wraca już do V31.0.11. Pozostałe zatwierdzone moduły bez zmian."
 }
