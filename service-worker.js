@@ -1,7 +1,7 @@
-const APP_VERSION='V31.1.1-RYNKI-EU-MASTER';
+const APP_VERSION='V31.2.0-STATUS-FIRMY-CRM-MASTER';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
-const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js','./contractors-eu.json','./logo-lm.png'];
+const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js','./contractors-eu.json','./logo-lm.png','./crm-status-v32.css','./crm-status-v32.js','./assistant-messages.json'];
 const OPTIONAL=['./manifest.webmanifest','./version.json','./icon-192.png','./icon-512.png','./icon-maskable-512.png'];
 
 async function freshPut(cache,path){
@@ -64,6 +64,15 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
+
+  if(/\/assistant-messages\.json$/.test(url.pathname)){
+    event.respondWith((async()=>{
+      try{const r=await fetch(req,{cache:'no-store'});if(r&&r.ok){const c=await caches.open(CACHE);await c.put('./assistant-messages.json',r.clone());}return r;}
+      catch(e){return serveLocal('./assistant-messages.json',req);}
+    })());
+    return;
+  }
+
   if(/\/contractors-eu\.json$/.test(url.pathname)){
     event.respondWith((async()=>{
       try{
@@ -87,6 +96,9 @@ self.addEventListener('fetch',event=>{
   else if(/\/invoice-master\.png$/.test(url.pathname))local='./invoice-master.png';
   else if(/\/logo-lm\.png$/.test(url.pathname))local='./logo-lm.png';
   else if(/\/contractors-eu\.json$/.test(url.pathname))local='./contractors-eu.json';
+  else if(/\/crm-status-v32\.js$/.test(url.pathname))local='./crm-status-v32.js';
+  else if(/\/crm-status-v32\.css$/.test(url.pathname))local='./crm-status-v32.css';
+  else if(/\/assistant-messages\.json$/.test(url.pathname))local='./assistant-messages.json';
   if(local){
     event.respondWith(serveLocal(local,req));
     return;

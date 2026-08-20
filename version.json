@@ -1,5 +1,5 @@
 {
-  "version": "V31.1.1",
-  "build": "2026-08-20T07:08:00+02:00",
-  "notes": "HOTFIX RYNKI EU MASTER: wyłącznie przywrócenie zatwierdzonej grafiki modułu. Zachowane dane LIVE, automatyczna aktualizacja contractors-eu.json, funkcje telefonu/mapy/szczegółów, faktury MASTER oraz pozostałe moduły bez zmian. Przywrócono właściwe logo, metaliczny złoty nagłówek, stylizowane flagi, herby miast i duże błyszczące przyciski funkcyjne. Karta główna pokazuje zatwierdzony zestaw 8 krajów plus nowe kraje tylko po pojawieniu się danych."
+  "version": "V31.2.0",
+  "build": "2026-08-20T12:58:00+02:00",
+  "notes": "STATUS FIRMY CRM MASTER: duży pasek statusu, pełna tabela, laserowe kolory akcji (telefon zielony, mapa niebieska, szczegóły czerwone, generuj ofertę żółto-pomarańczowe), jasny panel danych firmy, wiadomości specjalne od asystenta, trwałe statusy CRM oraz automatyczne przenoszenie KLIENT ZATWIERDZONY do tabeli KLIENCI i DOSTAWCA ZATWIERDZONY do tabeli DOSTAWCY. Generator oferty otwiera się z wybraną firmą. Pozostałe moduły bez zmian."
 }
