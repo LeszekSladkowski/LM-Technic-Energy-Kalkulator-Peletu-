@@ -1,4 +1,4 @@
-/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.1 — 20.08.2026 */
+/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.2 — 20.08.2026 */
 (function(){
 'use strict';
 const STATUS_KEY='lm_eu_crm_status_v32';
@@ -66,6 +66,8 @@ function eu32Country(code,reset=true){
   const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31 eu32-page';
   root.innerHTML=eu31Shell('Baza kontrahentów — '+eu31CountryName(code))+`<div class="eu32-wrap"><div class="eu32-topline"><div class="eu32-update"><span>Aktualizacja:</span><b>${eu31DateOnly(db.generated_at)}</b><small>Nowe dziś: ${(db.contractors||[]).filter(x=>x.country===code&&new Date(x.date_added||0).toDateString()===new Date().toDateString()).length}</small></div></div><section class="eu32-statusbar"><div class="eu32-status-caption"><span class="eu32-building">🏢</span><span>STATUS<br>FIRMY:</span></div><div class="eu32-status-main"><span class="eu32-status-icon" style="color:${sm.color}">${sm.icon}</span><div class="eu32-status-copy"><div class="eu32-status-name">${eu31Esc(selected?statusOf(selected):'BRAK REKORDU')}</div><div class="eu32-selected-company">${eu31Esc(selected?.company||'Wybierz firmę z tabeli')}</div></div></div></section><div class="eu32-status-selector">${statusButtons(selected)}</div><div class="eu32-toolbar"><label class="eu32-search"><span>⌕</span><input id="eu32Search" value="${eu31Esc(EU31_STATE.q)}" placeholder="Szukaj firmy w ${eu31Esc(eu31CountryName(code))}..."></label><select id="eu32Filter" class="eu32-filter"><option value="ALL">WSZYSTKIE STATUSY</option>${STATUS_LIST.map(s=>`<option value="${s}" ${EU32_STATUS_FILTER===s?'selected':''}>${s}</option>`).join('')}</select></div><section class="eu32-table"><div class="eu32-head"><div>STATUS</div><div>FIRMA</div><div>KRAJ / MIASTO</div><div>PRODUKT / RYNEK</div><div>DODANO</div><div>AKTUALIZACJA</div><div>AKCJE</div></div><div id="eu32Rows">${arr.length?arr.map(x=>row(x,String(x.id)===String(selected?.id))).join(''):`<div class="eu32-empty">Brak rekordów dla wybranego filtra.</div>`}</div></section><div class="eu32-status-help"><div>⭐ <strong>KLIENT ZATWIERDZONY</strong> → tabela KLIENCI</div><div>🟣 <strong>DOSTAWCA ZATWIERDZONY</strong> → tabela DOSTAWCY</div></div>${assistantHtml()}${nav()}</div>`;
   app.appendChild(root);
+  const backBtn=root.querySelector('.eu31-back');
+  if(backBtn)backBtn.onclick=()=>eu31Country(code,false);
   document.getElementById('eu32Search')?.addEventListener('input',e=>eu32SearchInput(e.target));
   document.getElementById('eu32Filter')?.addEventListener('change',e=>{EU32_STATUS_FILTER=e.target.value;eu32Country(code,false)});
   eu32LoadMessages();window.scrollTo({top:0,left:0,behavior:'auto'});
@@ -79,6 +81,7 @@ function eu32SearchInput(el){
 }
 
 function eu32Select(id){const x=eu31ById(id);if(!x)return;setSelected(x.country,x.id);eu32Country(x.country,false)}
+function eu32OpenCompany(id){const x=eu31ById(id);if(!x)return;setSelected(x.country,x.id);EU31_STATE.country=x.country;EU31_STATE.q='';EU32_STATUS_FILTER='ALL';eu32Country(x.country,false)}
 function removeLinkedClient(id){if(typeof CLIENTS_V13==='undefined')return;const before=CLIENTS_V13.length;CLIENTS_V13=CLIENTS_V13.filter(c=>String(c.euSourceId||'')!==String(id));if(CLIENTS_V13.length!==before&&typeof persistClientsV13==='function')persistClientsV13()}
 function removeLinkedSupplier(id){try{const a=getCustomSuppliers();const b=a.filter(s=>String(s.euSourceId||'')!==String(id)&&String(s.id||'')!=='eu_'+String(id));if(b.length!==a.length)saveCustomSuppliers(b)}catch(e){}}
 function syncClient(x){
@@ -116,8 +119,8 @@ async function eu32LoadMessages(){
     }
   }catch(e){}
 }
-// Counts visible on the Europe overview respect CRM-approved type changes.
+// Screen 2 remains the approved RYNKI EU card. Only its counts/filters respect CRM-approved type changes.
 try{eu31Counts=function(code){const arr=(EU31_STATE.db?.contractors||[]).filter(x=>x.country===code);return {all:arr.length,sup:arr.filter(x=>typeOf(x)==='supplier').length,cli:arr.filter(x=>typeOf(x)==='client').length,new:arr.filter(eu31IsNew).length}}}catch(e){}
-window.eu32Select=eu32Select;window.eu32SetStatus=setStatus;window.eu32GenerateOffer=generateOffer;window.eu32Country=eu32Country;window.eu32SearchInput=eu32SearchInput;
-try{eu31Country=eu32Country}catch(e){window.eu31Country=eu32Country}
+try{eu31Filtered=function(code){let a=(EU31_STATE.db?.contractors||[]).filter(x=>x.country===code);if(EU31_STATE.filter==='supplier')a=a.filter(x=>typeOf(x)==='supplier');if(EU31_STATE.filter==='client')a=a.filter(x=>typeOf(x)==='client');const q=norm(EU31_STATE.q);if(q)a=a.filter(x=>norm([x.company,x.city,x.product,x.contact_person,x.phone,x.email,statusOf(x),roleOf(x)].join(' ')).includes(q));return a.sort((a,b)=>(eu31IsNew(b)-eu31IsNew(a))||String(a.company||'').localeCompare(String(b.company||''),'pl'))}}catch(e){}
+window.eu32Select=eu32Select;window.eu32OpenCompany=eu32OpenCompany;window.eu32SetStatus=setStatus;window.eu32GenerateOffer=generateOffer;window.eu32Country=eu32Country;window.eu32SearchInput=eu32SearchInput;
 })();
