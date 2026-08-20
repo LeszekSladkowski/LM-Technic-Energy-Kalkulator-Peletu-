@@ -1,5 +1,5 @@
 {
-  "version": "V31.1.0",
-  "build": "2026-08-20T06:40:00+02:00",
-  "notes": "RYNKI EU LIVE. Aktywowany zatwierdzony kafel RYNKI EU bez zmiany grafiki PULPITU MASTER. Dodano żywy ekran krajów i karty krajowe w zatwierdzonym stylu premium: duże flagi, wyszukiwarka, filtry KLIENCI/DOSTAWCY, duże przyciski telefonu/mapy/szczegółów, automatyczne pobieranie centralnego pliku contractors-eu.json, pamięć offline i aktualizację danych bez przebudowy aplikacji. Faktury pozostają na zatwierdzonym silniku V31.0.11 bez zmian graficznych MASTER."
+  "version": "V31.1.1",
+  "build": "2026-08-20T07:08:00+02:00",
+  "notes": "HOTFIX RYNKI EU MASTER: wyłącznie przywrócenie zatwierdzonej grafiki modułu. Zachowane dane LIVE, automatyczna aktualizacja contractors-eu.json, funkcje telefonu/mapy/szczegółów, faktury MASTER oraz pozostałe moduły bez zmian. Przywrócono właściwe logo, metaliczny złoty nagłówek, stylizowane flagi, herby miast i duże błyszczące przyciski funkcyjne. Karta główna pokazuje zatwierdzony zestaw 8 krajów plus nowe kraje tylko po pojawieniu się danych."
 }
