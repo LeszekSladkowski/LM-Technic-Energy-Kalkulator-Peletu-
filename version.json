@@ -1,5 +1,5 @@
 {
-  "version": "V31.2.5",
-  "build": "2026-08-20T22:55:00+02:00",
-  "notes": "VISUAL VIEWPORT FIT / CACHE FIX. Pulpit dopasowuje się do faktycznie widocznej szerokości telefonu także przy zachowanym zoomie Chrome. Odblokowano prawidłowe skalowanie viewportu. Nawigacja Service Worker jest network-first online, więc GitHub Pages nie pokazuje starego index.html z cache. Zachowane wszystkie funkcje V31.2.4/V31.2.3."
+  "version": "V31.2.6",
+  "build": "2026-08-20T23:16:00+02:00",
+  "notes": "PULPIT MASTER SCALE FIT. Naprawiono faktyczną przyczynę przycięcia: aktywny pulpit V21 miał stałą szerokość 941 px i omijał wcześniejszą regułę .screen.portrait. Teraz cały PULPIT MASTER wraz z aktywnymi hotspotami jest skalowany jako jedna całość dokładnie do visualViewport telefonu. Zachowano grafikę MASTER, moduły, RYNKI EU ekran 2/3, CRM, FAKTURY PREMIUM i aktualizacje."
 }
