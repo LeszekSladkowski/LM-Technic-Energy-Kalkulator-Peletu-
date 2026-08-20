@@ -1,5 +1,5 @@
 {
-  "version": "V31.2.3",
-  "build": "2026-08-20T22:17:00+02:00",
-  "notes": "MOBILE FIT / SCREEN RESPONSIVE FIX. Ekran nr 2 RYNKI EU i ekran nr 3 STATUS FIRMY CRM dopasowane do telefonów bez poziomego przewijania. Zachowana zatwierdzona grafika, statusy CRM, jasny panel danych, telefon zielony, mapa niebieska, szczegóły czerwone, oferta żółto-pomarańczowa, wiadomości asystenta i automatyczne przenoszenie do KLIENTÓW/DOSTAWCÓW. Automatyczne sprawdzanie wersji działa przy uruchomieniu oraz co najmniej raz na dobę; ręczne sprawdzanie i aktualizacja pozostają aktywne."
+  "version": "V31.2.5",
+  "build": "2026-08-20T22:55:00+02:00",
+  "notes": "VISUAL VIEWPORT FIT / CACHE FIX. Pulpit dopasowuje się do faktycznie widocznej szerokości telefonu także przy zachowanym zoomie Chrome. Odblokowano prawidłowe skalowanie viewportu. Nawigacja Service Worker jest network-first online, więc GitHub Pages nie pokazuje starego index.html z cache. Zachowane wszystkie funkcje V31.2.4/V31.2.3."
 }

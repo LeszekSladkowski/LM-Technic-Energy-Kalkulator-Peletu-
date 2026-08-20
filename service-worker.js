@@ -1,4 +1,4 @@
-const APP_VERSION='V31.2.3-MOBILE-FIT-SCREEN-RESPONSIVE-DAILY-AUTOUPDATE';
+const APP_VERSION='V31.2.5-VISUAL-VIEWPORT-FIT-CACHE-FIX';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
 const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js','./contractors-eu.json','./logo-lm.png','./crm-status-v32.css','./crm-status-v32.js','./assistant-messages.json'];
@@ -85,7 +85,17 @@ self.addEventListener('fetch',event=>{
   }
 
   if(req.mode==='navigate'){
-    event.respondWith(serveLocal('./index.html',req));
+    event.respondWith((async()=>{
+      // Online zawsze bierz najnowszy index.html z GitHub Pages.
+      // Cache jest tylko awaryjny/offline — eliminuje utknięcie na starej wersji ekranu.
+      try{
+        const r=await fetch(req,{cache:'no-store'});
+        if(r&&r.ok){const c=await caches.open(CACHE);await c.put('./index.html',r.clone());}
+        return r;
+      }catch(e){
+        return serveLocal('./index.html',req);
+      }
+    })());
     return;
   }
 
