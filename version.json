@@ -1,5 +1,5 @@
 {
-  "version": "V31.2.2",
-  "build": "2026-08-20T17:08:00+02:00",
-  "notes": "Przywrócony zatwierdzony ekran nr 2 RYNKI EU. Przycisk trzech kropek/trzech kresek otwiera aktywny ekran nr 3 STATUS FIRMY CRM dla wybranej firmy. Ekran nr 3 wypełnia szerokość telefonu i ma zwiększoną czytelność. Zachowane statusy CRM, automatyczne przenoszenie do KLIENTÓW/DOSTAWCÓW, wiadomości asystenta, generator oferty, faktury i updater."
+  "version": "V31.2.3",
+  "build": "2026-08-20T22:17:00+02:00",
+  "notes": "MOBILE FIT / SCREEN RESPONSIVE FIX. Ekran nr 2 RYNKI EU i ekran nr 3 STATUS FIRMY CRM dopasowane do telefonów bez poziomego przewijania. Zachowana zatwierdzona grafika, statusy CRM, jasny panel danych, telefon zielony, mapa niebieska, szczegóły czerwone, oferta żółto-pomarańczowa, wiadomości asystenta i automatyczne przenoszenie do KLIENTÓW/DOSTAWCÓW. Automatyczne sprawdzanie wersji działa przy uruchomieniu oraz co najmniej raz na dobę; ręczne sprawdzanie i aktualizacja pozostają aktywne."
 }

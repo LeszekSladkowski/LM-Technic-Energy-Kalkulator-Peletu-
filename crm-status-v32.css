@@ -1,4 +1,4 @@
-/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.2 — 20.08.2026 */
+/* L&M Technic Energy — STATUS FIRMY CRM MASTER V31.2.3 MOBILE FIT — 20.08.2026 */
 :root{
   --eu32-bg:#00160e;--eu32-bg2:#00261a;--eu32-line:#b97a0c;--eu32-gold:#efad20;--eu32-gold2:#ffd460;
   --eu32-green:#30ff24;--eu32-blue:#168dff;--eu32-red:#ff3a2f;--eu32-orange:#ffad17;--eu32-purple:#a865e7;--eu32-gray:#717774;
@@ -18,15 +18,65 @@
 .eu32-assistant{margin-top:10px;border:2px solid var(--eu32-line);border-radius:17px;background:linear-gradient(145deg,#062719,#02130c);overflow:hidden}.eu32-assistant-head{min-height:64px;display:grid;grid-template-columns:62px 1fr auto;align-items:center;padding:7px 16px;border-bottom:1px solid rgba(185,122,12,.55)}.eu32-assistant-icon{width:48px;height:48px;border-radius:12px;border:1px solid #5da61d;background:radial-gradient(circle,#dcf2c8,#5fa12a);display:grid;place-items:center;font-size:29px;box-shadow:0 0 10px rgba(104,220,38,.45)}.eu32-assistant-head h2{margin:0;color:#f1b329;font-size:clamp(20px,3.6vw,30px)}.eu32-assistant-head p{margin:2px 0 0;color:#e4e9e5;font-size:12px}.eu32-assistant-count{border:1px solid #82bd1f;border-radius:10px;padding:8px 12px;color:#fff;font-weight:900;background:#12311b;font-size:12px}.eu32-msg{display:grid;grid-template-columns:118px 46px 1fr;min-height:62px;border-top:1px solid rgba(77,109,75,.45);align-items:center}.eu32-msg:first-of-type{border-top:0}.eu32-msg-time{padding:8px 12px;color:#91d243;font-size:12px;line-height:1.25}.eu32-msg-ico{text-align:center;font-size:25px}.eu32-msg-text{padding:8px 13px;font-size:13px;line-height:1.3}.eu32-msg-text b{color:#f3b52c}.eu32-assistant-foot{min-height:43px;border-top:1px solid rgba(185,122,12,.55);display:flex;align-items:center;justify-content:center;color:#f2b12b;font-size:12px;font-weight:900}
 .eu32-nav{height:78px;margin-top:10px;border-top:1px solid var(--eu32-line);display:grid;grid-template-columns:repeat(5,1fr);background:#031109}.eu32-nav button{border:0;border-right:1px solid rgba(185,122,12,.4);background:transparent;color:#d7a427;font-size:10px;font-weight:900}.eu32-nav button:last-child{border-right:0}.eu32-nav span{display:block;font-size:25px;margin-bottom:3px}.eu32-nav .active{background:radial-gradient(circle,rgba(76,151,27,.38),transparent 72%);box-shadow:inset 0 3px 0 #e9c32e;color:#ffd143}
 @media(max-width:620px){
-  .eu32-page{width:100vw!important;min-width:0!important;max-width:100vw!important;overflow-x:hidden}
-  .eu32-wrap{width:100%;padding-left:5px;padding-right:5px}
-  .eu32-page .eu31-top{height:78px}.eu32-page .eu31-logo{width:190px;height:74px}.eu32-page .eu31-topbtn{top:16px;width:44px;height:44px;font-size:31px}.eu32-page .eu31-searchbtn{right:58px}.eu32-page .eu31-gear{right:6px;font-size:27px}.eu32-page .eu31-back{left:4px}.eu32-page .eu31-hero{min-height:88px}.eu32-page .eu31-title{font-size:36px}.eu32-page .eu31-subtitle{font-size:14px}
-  .eu32-update{min-width:135px;padding:6px 9px}.eu32-update span{font-size:10px}.eu32-update b{font-size:16px}.eu32-update small{font-size:9px}
-  .eu32-statusbar{min-height:94px;grid-template-columns:112px 1fr;border-radius:16px}.eu32-status-caption{padding:10px 8px;gap:6px;font-size:14px}.eu32-building{font-size:30px}.eu32-status-main{padding:9px 10px;gap:8px}.eu32-status-icon{font-size:34px}.eu32-status-name{font-size:24px}.eu32-selected-company{font-size:10px;margin-top:4px}
-  .eu32-status-selector{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:7px 0}.eu32-status-btn{min-height:43px;font-size:8.6px;padding:4px 2px}.eu32-status-btn span{width:9px;height:9px;margin-right:2px}
-  .eu32-toolbar{grid-template-columns:1fr 112px;gap:5px}.eu32-search{height:40px;padding:0 8px}.eu32-search input{font-size:12px}.eu32-filter{font-size:8px;padding:0 4px}
-  .eu32-head,.eu32-row-main{grid-template-columns:7% 23% 15% 18% 10% 10% 17%}.eu32-head{min-height:36px;font-size:7.5px}.eu32-row-main{min-height:72px}.eu32-head>div,.eu32-row-main>div{padding:4px 2px}.eu32-firm b{font-size:10.8px}.eu32-firm small{font-size:7.2px;margin-top:3px}.eu32-cell,.eu32-product{font-size:8.3px;line-height:1.2}.eu32-status-dot{width:19px;height:19px}.eu32-status-dot.star{width:23px;height:23px}.eu32-actions{grid-template-columns:repeat(3,27px);gap:3px;padding:3px!important}.eu32-act{width:27px;height:27px;border-radius:6px;font-size:14px}.eu32-offer{height:27px;font-size:7px}
-  .eu32-detail{margin:0 5px 7px;padding:9px 8px;gap:7px;grid-template-columns:1fr 1fr}.eu32-dline{grid-template-columns:56px 1fr;font-size:8.6px;padding:3px 0}.eu32-detail-actions{gap:4px}.eu32-detail-actions button{min-height:28px;font-size:7.6px;padding:0 6px}
-  .eu32-status-help{grid-template-columns:1fr;min-height:0}.eu32-status-help>div{font-size:8.4px;padding:7px}.eu32-status-help>div+div{border-left:0;border-top:1px solid rgba(185,122,12,.5)}
-  .eu32-assistant-head{grid-template-columns:42px 1fr auto;min-height:56px;padding:6px 7px}.eu32-assistant-icon{width:34px;height:34px;font-size:21px}.eu32-assistant-head h2{font-size:16px;line-height:1.05}.eu32-assistant-head p{font-size:8.5px}.eu32-assistant-count{font-size:8px;padding:5px 6px}.eu32-msg{grid-template-columns:68px 30px 1fr;min-height:52px}.eu32-msg-time{font-size:8.2px;padding:5px 6px}.eu32-msg-ico{font-size:17px}.eu32-msg-text{font-size:9.4px;padding:6px;line-height:1.25}.eu32-assistant-foot{min-height:34px;font-size:8px}.eu32-nav{height:62px}.eu32-nav button{font-size:7.5px}.eu32-nav span{font-size:19px}
+  html,body,#app{width:100%;max-width:100%;overflow-x:hidden!important}
+  .eu32-page{width:100%!important;min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+  .eu32-wrap{width:100%;max-width:100%;padding:8px 5px 0;overflow-x:hidden}
+
+  .eu32-page .eu31-top{height:76px}
+  .eu32-page .eu31-logo{width:184px;height:70px}
+  .eu32-page .eu31-topbtn{top:15px;width:42px;height:42px;font-size:29px}
+  .eu32-page .eu31-searchbtn{right:54px}.eu32-page .eu31-gear{right:5px;font-size:25px}.eu32-page .eu31-back{left:3px}
+  .eu32-page .eu31-hero{min-height:84px}
+  .eu32-page .eu31-title{font-size:34px;letter-spacing:.4px}
+  .eu32-page .eu31-subtitle{font-size:13px;margin-top:6px}
+
+  .eu32-topline{margin:-2px 0 6px}
+  .eu32-update{min-width:128px;padding:5px 8px;border-radius:12px}
+  .eu32-update span{font-size:9.5px}.eu32-update b{font-size:15px}.eu32-update small{font-size:8.5px}
+
+  .eu32-statusbar{min-height:90px;grid-template-columns:106px minmax(0,1fr);border-radius:15px}
+  .eu32-status-caption{padding:9px 7px;gap:5px;font-size:13px}.eu32-building{font-size:28px}
+  .eu32-status-main{padding:8px 8px;gap:7px;min-width:0}.eu32-status-icon{font-size:31px}
+  .eu32-status-name{font-size:22px;overflow-wrap:anywhere}.eu32-selected-company{font-size:9.5px;margin-top:4px}
+
+  .eu32-status-selector{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:7px 0}
+  .eu32-status-btn{min-width:0;min-height:41px;font-size:8.2px;padding:4px 2px;overflow:hidden}
+  .eu32-status-btn span{width:9px;height:9px;margin-right:2px}
+
+  .eu32-toolbar{grid-template-columns:minmax(0,1fr) 108px;gap:5px;margin-bottom:7px}
+  .eu32-search{height:39px;padding:0 7px;min-width:0}.eu32-search span{font-size:20px}.eu32-search input{font-size:11.5px;min-width:0}
+  .eu32-filter{min-width:0;font-size:7.6px;padding:0 3px}
+
+  .eu32-table{width:100%;max-width:100%;overflow:hidden;border-radius:12px}
+  .eu32-head,.eu32-row-main{width:100%;max-width:100%;grid-template-columns:7% 21% 13% 16% 10% 9% 24%;overflow:hidden}
+  .eu32-head{min-height:35px;font-size:7px;line-height:1.05}
+  .eu32-row-main{min-height:70px}
+  .eu32-head>div,.eu32-row-main>div{min-width:0;max-width:100%;padding:4px 2px;overflow:hidden;overflow-wrap:anywhere;word-break:break-word}
+  .eu32-firm{min-width:0;overflow:hidden}.eu32-firm b{font-size:10.2px;line-height:1.1;overflow-wrap:anywhere}
+  .eu32-firm small{font-size:6.9px;margin-top:3px;white-space:normal;overflow-wrap:anywhere}
+  .eu32-cell,.eu32-product{min-width:0;font-size:7.5px;line-height:1.18;overflow:hidden;overflow-wrap:anywhere;word-break:break-word}
+  .eu32-status-dot{width:18px;height:18px}.eu32-status-dot.star{width:22px;height:22px}
+  .eu32-actions{width:100%;min-width:0;grid-template-columns:repeat(3,23px)!important;gap:2px!important;justify-content:center;padding:3px 1px!important;overflow:hidden}
+  .eu32-act{width:23px;height:25px;border-radius:5px;font-size:12px;border-width:1.2px}
+  .eu32-act svg{max-width:15px;max-height:15px}
+  .eu32-offer{width:100%;min-width:0;height:25px;border-radius:6px;font-size:6.2px;padding:0 1px;white-space:normal;line-height:1.05;overflow:hidden}
+
+  .eu32-detail{width:calc(100% - 6px);max-width:calc(100% - 6px);margin:0 3px 7px;padding:8px 7px;gap:6px;grid-template-columns:1fr 1fr;overflow:hidden}
+  .eu32-detail-col{min-width:0;overflow:hidden}.eu32-dline{grid-template-columns:52px minmax(0,1fr);font-size:8.2px;padding:3px 0;min-width:0}
+  .eu32-dline span{min-width:0;overflow-wrap:anywhere;word-break:break-word}.eu32-dnote{grid-template-columns:47px minmax(0,1fr)}
+  .eu32-detail-actions{gap:4px}.eu32-detail-actions button{min-height:27px;font-size:7.2px;padding:0 5px}
+
+  .eu32-status-help{grid-template-columns:1fr;min-height:0}.eu32-status-help>div{font-size:8px;padding:6px}.eu32-status-help>div+div{border-left:0;border-top:1px solid rgba(185,122,12,.5)}
+  .eu32-assistant{margin-top:8px}.eu32-assistant-head{grid-template-columns:40px minmax(0,1fr) auto;min-height:53px;padding:5px 6px}
+  .eu32-assistant-icon{width:32px;height:32px;font-size:19px}.eu32-assistant-head h2{font-size:15px;line-height:1.05}.eu32-assistant-head p{font-size:8px}
+  .eu32-assistant-count{font-size:7.6px;padding:4px 5px}.eu32-msg{grid-template-columns:63px 28px minmax(0,1fr);min-height:49px}
+  .eu32-msg-time{font-size:7.8px;padding:5px}.eu32-msg-ico{font-size:16px}.eu32-msg-text{font-size:9px;padding:5px;line-height:1.22;overflow-wrap:anywhere}
+  .eu32-assistant-foot{min-height:32px;font-size:7.6px}.eu32-nav{height:59px}.eu32-nav button{font-size:7.2px}.eu32-nav span{font-size:18px}
+}
+@media(max-width:380px){
+  .eu32-page .eu31-title{font-size:32px}
+  .eu32-head,.eu32-row-main{grid-template-columns:7% 20% 13% 15% 10% 9% 26%}
+  .eu32-actions{grid-template-columns:repeat(3,22px)!important}
+  .eu32-act{width:22px;height:24px;font-size:11px}
+  .eu32-cell,.eu32-product{font-size:7.1px}.eu32-firm b{font-size:9.8px}
 }

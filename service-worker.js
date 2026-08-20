@@ -1,4 +1,4 @@
-const APP_VERSION='V31.2.2-RYNKI-EU-SCREEN2-CRM-SCREEN3-FULLSCREEN';
+const APP_VERSION='V31.2.3-MOBILE-FIT-SCREEN-RESPONSIVE-DAILY-AUTOUPDATE';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
 const CORE=['./index.html','./invoice-master.png','./invoice-v31.css','./invoice-v31.js','./contractors-eu.json','./logo-lm.png','./crm-status-v32.css','./crm-status-v32.js','./assistant-messages.json'];
