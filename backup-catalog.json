@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-08-21T13:46:00+02:00",
+  "entries": [
+    {
+      "version": "V31.3.4",
+      "build": "2026-08-21T13:45:00+02:00",
+      "file": "./BACKUP_V31_3_4_PATCH.zip",
+      "size": 402789,
+      "description": "FINAL MASTER: USTAWIENIA + magazyn backupów + naprawiony updater + flagi MASTER + dopasowanie START bez pustego pola.",
+      "kind": "patch"
+    },
+    {
+      "version": "V31.3.3",
+      "build": "2026-08-21T12:50:00+02:00",
+      "file": "./BACKUP_V31_3_3_PATCH.zip",
+      "size": 101171,
+      "description": "Naprawa mechanizmu aktualizacji i mobilnych USTAWIEŃ.",
+      "kind": "patch"
+    },
+    {
+      "version": "V31.3.2",
+      "build": "2026-08-21T12:15:00+02:00",
+      "file": "./BACKUP_V31_3_2_PATCH.zip",
+      "size": 99079,
+      "description": "FINAL MASTER kart RYNKI EU 1/2/3.",
+      "kind": "patch"
+    },
+    {
+      "version": "V31.3.1",
+      "build": "2026-08-21T11:45:00+02:00",
+      "file": "./BACKUP_V31_3_1_PATCH.zip",
+      "size": 95584,
+      "description": "Poprawka mobilnego skalowania kart.",
+      "kind": "patch"
+    },
+    {
+      "version": "V31.3.0",
+      "build": "2026-08-21T11:20:00+02:00",
+      "file": "./BACKUP_V31_3_0_PATCH.zip",
+      "size": 95174,
+      "description": "MASTER FIX RYNKI EU i przepływ kart 1 → 2 → 3.",
+      "kind": "patch"
+    }
+  ]
+}

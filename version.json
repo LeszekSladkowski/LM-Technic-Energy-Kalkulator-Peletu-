@@ -1,5 +1,5 @@
 {
-  "version": "V31.3.2",
-  "build": "2026-08-21T12:15:00+02:00",
-  "notes": "FINAL MASTER RYNKI EU 1/2/3: exact approved reference images frozen in assets; native mobile layout without 941px zoom; card 1 full-height 12 waving flags; card 2 MASTER with green phone, blue map, Orange menu and CRM transition; card 3 MASTER with country flag, 4 filters, privacy white i button, RODO hidden by default, 3-color actions, assistant messages."
+  "version": "V31.3.4",
+  "build": "2026-08-21T13:45:00+02:00",
+  "notes": "V31.3.4 FINAL: aktywna karta USTAWIENIA MASTER z szerokim paskiem postępu, magazynem backupów/importem ZIP i udostępnianiem; naprawiony mechanizm aktualizacji bez powrotu do V31.0.11; RYNKI EU zachowują zatwierdzone karty 1/2/3 i flagi MASTER; START zachowuje grafikę MASTER bez rozciągania i automatycznie wypełnia wysokość wysokiego ekranu stylistyczną kontynuacją zamiast pustego pola."
 }

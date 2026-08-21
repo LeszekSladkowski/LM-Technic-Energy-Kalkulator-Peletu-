@@ -32,6 +32,7 @@ function lmAutoFit(root,designWidth=941){
     window.__lmFitListener=()=>document.querySelectorAll('[data-lm-fit-scale]').forEach(el=>{
       const dw=Number(el.dataset.lmDesignWidth||941);const vv=window.visualViewport;const vw=Math.max(1,Math.round(vv?.width||document.documentElement.clientWidth||window.innerWidth||dw));el.style.zoom=String(Math.min(1,vw/dw));
     });
+      try{window.__lmHomeFill?.();}catch(e){}
     window.addEventListener('resize',window.__lmFitListener,{passive:true});
     window.visualViewport?.addEventListener('resize',window.__lmFitListener,{passive:true});
   }
@@ -1698,8 +1699,25 @@ function v21Home(){
   v21Hot(bottom,.835*941,bottomY,.16*941,.045*fullH,()=>go('suppliers'),'BAZA DOSTAWCÓW');
   root.appendChild(bottom);
 
+  /* V31.3.4 FINAL: nie rozciągamy i nie kadrujemy MASTER-a.
+     Na bardzo wysokich ekranach telefonu dokładamy wyłącznie stylistyczne tło do końca viewportu,
+     dzięki czemu nie ma dużego pustego czarnego pola pod panelem. */
+  const tail=document.createElement('div');tail.className='v21-screen-tail';root.appendChild(tail);
+
   app.appendChild(root);
   lmAutoFit(root,941);
+  const fitHomeHeight=()=>{
+    if(!root.isConnected)return;
+    const vv=window.visualViewport;
+    const vw=Math.max(1,Math.round(vv?.width||document.documentElement.clientWidth||window.innerWidth||941));
+    const vh=Math.max(1,Math.round(vv?.height||document.documentElement.clientHeight||window.innerHeight||0));
+    const scale=Math.min(1,vw/941);
+    const base=716.78+180+694.72;
+    const need=Math.max(0,Math.ceil(vh/scale-base));
+    tail.style.height=need+'px';
+  };
+  window.__lmHomeFill=fitHomeHeight;fitHomeHeight();
+  requestAnimationFrame(fitHomeHeight);setTimeout(fitHomeHeight,180);
   window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 
@@ -2078,7 +2096,7 @@ function renderInvoicesV20(){
 
 const goV15Base=go;
 
-const V30_APP_VERSION='V31.2.7';
+const V30_APP_VERSION='V31.3.4';
 let V30_installPrompt=null;
 let V30_updateReady=false;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();V30_installPrompt=e;});
@@ -2176,19 +2194,172 @@ async function v30RefreshApp(){
   try{const reg=await v30GetRegistration();if(reg)await reg.update();await fetch('./version.json?ts='+Date.now(),{cache:'no-store'});}catch(e){}
   setTimeout(()=>location.reload(),500);
 }
-function renderSettingsV30(){
-  const app=document.getElementById('app');app.innerHTML='';
-  const d=document.createElement('div');d.className='v30-settings';
-  const installed=v30IsStandalone();
-  d.innerHTML=`<div class="v30-set-head"><div class="v30-set-brand">L&M<small>TECHNIC ENERGY</small></div><div class="v30-set-title"><h1>USTAWIENIA APLIKACJI</h1><p>INSTALACJA • WERSJA • AKTUALIZACJE</p></div><button class="v30-set-back" onclick="go('home')">← PULPIT</button></div><div class="v30-set-body">
-    <section class="v30-set-card"><img class="v30-app-icon" src="./icon-512.png" alt="Ikona L&M Technic Energy"><h2>EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM</h2><p>Wersja instalowana V31.2.7 — STATUS FIRMY CRM MASTER + RYNKI EU + FAKTURY PREMIUM. Moduł RYNKI EU działa jako żywa baza kontrahentów, pobiera świeży plik danych bez przebudowy aplikacji, zachowuje działanie offline oraz wszystkie zatwierdzone poprawki faktur. Po instalacji ikona L&M będzie wyświetlana jako samodzielna aplikacja — bez znaczka Chrome.</p><div style="clear:both"></div><div class="v30-set-status"><div class="v30-set-stat"><span>WERSJA</span><b>${V30_APP_VERSION}</b></div><div class="v30-set-stat"><span>TRYB</span><b class="green">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div class="v30-set-stat"><span>AKTUALIZACJE</span><b class="green">AUTOMATYCZNE + RĘCZNE</b></div></div><div class="v30-set-actions"><button type="button" id="v30_install_btn" class="v30-set-btn blue">⬇ ZAINSTALUJ APLIKACJĘ</button><button type="button" id="v30_update_btn" class="v30-set-btn green">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v30-update-note">Po każdej kolejnej modernizacji opublikujemy nową wersję na tym samym adresie. Przycisk UAKTUALNIJ sprawdzi i pobierze nową wersję bez ponownego tworzenia skrótu.</div><div id="v30_action_status" class="v30-action-status">Przyciski gotowe. Możesz sprawdzić wersję lub uruchomić aktualizację.</div></section>
-    <section class="v30-set-card"><h2>SPRAWDZANIE WERSJI</h2><p>Aplikacja sprawdza aktualizacje przy uruchomieniu oraz na żądanie.</p><div class="v30-set-actions"><button type="button" id="v30_check_btn" class="v30-set-btn gray">🔎 SPRAWDŹ AKTUALIZACJĘ</button><button type="button" id="v30_refresh_btn" class="v30-set-btn gray">⟳ ODŚWIEŻ APLIKACJĘ</button></div></section>
-  </div>`;
-  app.appendChild(d);
-  const bind=(id,fn)=>{const el=document.getElementById(id);if(el){el.onclick=null;el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();fn();},{passive:false});}};
-  bind('v30_install_btn',v30Install);bind('v30_update_btn',v30UpdateNow);bind('v30_check_btn',()=>v30CheckUpdate(true));bind('v30_refresh_btn',v30RefreshApp);
-  window.scrollTo({top:0,left:0,behavior:'auto'});
+/* ===== V31.3.4 — MASTER USTAWIENIA + MAGAZYN BACKUPÓW ===== */
+const V34_BACKUP_DB='lm_technic_energy_backups_v1';
+const V34_BACKUP_STORE='backups';
+let V34_BACKUP_CACHE=[];
+let V34_SELECTED_BACKUP=null;
+let V34_LAST_SERVER_INFO=null;
+
+function v34FmtBytes(n){
+  n=Number(n||0); if(!n)return '—';
+  if(n<1024)return n+' B'; if(n<1024*1024)return (n/1024).toFixed(1)+' KB';
+  return (n/1024/1024).toFixed(2)+' MB';
 }
+function v34Esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function v34Delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function v34LocalDate(d=new Date()){return d.toLocaleDateString('pl-PL');}
+function v34LocalTime(d=new Date()){return d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function v34FileStamp(d=new Date()){return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z');}
+function v34SetProgress(p,label,detail){
+  const pct=Math.max(0,Math.min(100,Number(p||0)));
+  const bar=document.getElementById('v34_progress_bar'); if(bar)bar.style.width=pct+'%';
+  const num=document.getElementById('v34_progress_pct'); if(num)num.textContent=Math.round(pct)+'%';
+  const lab=document.getElementById('v34_progress_label'); if(lab&&label)lab.textContent=label;
+  const det=document.getElementById('v34_progress_detail'); if(det&&detail!==undefined)det.textContent=detail||'';
+}
+function v34Status(msg){const el=document.getElementById('v30_action_status');if(el)el.textContent=msg;toast(msg);}
+function v34SetAvailable(info){
+  V34_LAST_SERVER_INFO=info||null;
+  const title=document.getElementById('v34_available_title');
+  const note=document.getElementById('v34_available_note');
+  if(!title)return;
+  if(info?.version && info.version!==V30_APP_VERSION){title.textContent='Dostępna nowa wersja '+info.version;note.textContent='Zalecana aktualizacja dla stabilności i nowych funkcji.';}
+  else{title.textContent='Masz najnowszą wersję '+V30_APP_VERSION;note.textContent='Kalkulator jest aktualny i gotowy do pracy.';}
+}
+function v34OpenDb(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(V34_BACKUP_DB,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(V34_BACKUP_STORE))db.createObjectStore(V34_BACKUP_STORE,{keyPath:'id',autoIncrement:true});};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function v34BackupAll(){
+  try{const db=await v34OpenDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(V34_BACKUP_STORE,'readonly');const r=tx.objectStore(V34_BACKUP_STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);});}catch(e){return [];}
+}
+async function v34BackupPut(rec){
+  const db=await v34OpenDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(V34_BACKUP_STORE,'readwrite');const r=tx.objectStore(V34_BACKUP_STORE).put(rec);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+}
+async function v34BackupDeleteLocal(id){
+  const db=await v34OpenDb();return await new Promise((resolve,reject)=>{const tx=db.transaction(V34_BACKUP_STORE,'readwrite');const r=tx.objectStore(V34_BACKUP_STORE).delete(Number(id));r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);});
+}
+const V34_CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function v34Crc32(u8){let c=0xffffffff;for(const b of u8)c=V34_CRC_TABLE[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0;}
+function v34ZipSingle(name,text){
+  const enc=new TextEncoder(),fn=enc.encode(name),data=enc.encode(text),crc=v34Crc32(data);
+  const local=new Uint8Array(30+fn.length),lv=new DataView(local.buffer);lv.setUint32(0,0x04034b50,true);lv.setUint16(4,20,true);lv.setUint16(6,0,true);lv.setUint16(8,0,true);lv.setUint16(10,0,true);lv.setUint16(12,0,true);lv.setUint32(14,crc,true);lv.setUint32(18,data.length,true);lv.setUint32(22,data.length,true);lv.setUint16(26,fn.length,true);lv.setUint16(28,0,true);local.set(fn,30);
+  const central=new Uint8Array(46+fn.length),cv=new DataView(central.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,0,true);cv.setUint16(14,0,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,fn.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,0,true);central.set(fn,46);
+  const eocd=new Uint8Array(22),ev=new DataView(eocd.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,1,true);ev.setUint16(10,1,true);ev.setUint32(12,central.length,true);ev.setUint32(16,local.length+data.length,true);ev.setUint16(20,0,true);
+  return new Blob([local,data,central,eocd],{type:'application/zip'});
+}
+async function v34CreateSnapshot(reason='Ręczny backup'){ 
+  const now=new Date(),ls={};
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);ls[k]=localStorage.getItem(k);}}catch(e){}
+  const payload={schema:'LM_TECHNIC_BACKUP_V1',app:'EUROPEJSKI KALKULATOR PELETU 1.2 PREMIUM',version:V30_APP_VERSION,created_at:now.toISOString(),reason,localStorage:ls};
+  const blob=v34ZipSingle('backup.json',JSON.stringify(payload,null,2));
+  const filename='LM_Technic_Energy_BACKUP_'+V30_APP_VERSION.replace(/\./g,'_')+'_'+v34FileStamp(now)+'.zip';
+  const rec={version:V30_APP_VERSION,createdAt:now.getTime(),date:v34LocalDate(now),time:v34LocalTime(now),size:blob.size,description:reason,filename,blob,source:'auto'};
+  rec.id=await v34BackupPut(rec); await v34RenderBackups(); return rec;
+}
+async function v34LoadCatalog(){
+  try{const r=await fetch('./backup-catalog.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();return (j.entries||[]).filter(x=>!localStorage.getItem('lm_hide_backup_'+x.version)).map((x,i)=>{const d=new Date(x.build);return {id:'catalog:'+x.version,version:x.version,createdAt:d.getTime(),date:v34LocalDate(d),time:v34LocalTime(d),size:x.size,description:x.description,filename:(x.file||'').split('/').pop(),url:x.file,source:'catalog'};});}catch(e){return [];}
+}
+async function v34RenderBackups(){
+  const tbody=document.getElementById('v34_backup_body');if(!tbody)return;
+  const [local,catalog]=await Promise.all([v34BackupAll(),v34LoadCatalog()]);
+  const foundCurrent=[...local,...catalog].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).find(x=>x.version===V30_APP_VERSION);
+  const current=foundCurrent?{...foundCurrent,current:true}:{id:'current',version:V30_APP_VERSION,createdAt:Date.now()+1,date:v34LocalDate(),time:v34LocalTime(),size:0,description:'Aktualna wersja zainstalowana — utwórz snapshot przed zmianami.',source:'current',current:true};
+  const pool=[current,...local,...catalog].filter((x,i,a)=>!(foundCurrent&&String(x.id)===String(foundCurrent.id)&&i>0));
+  const seen=new Set();V34_BACKUP_CACHE=pool.sort((a,b)=>((b.current?1:0)-(a.current?1:0))||((b.createdAt||0)-(a.createdAt||0))).filter(x=>{const key=x.current?'current':x.source+':'+x.version+':'+x.createdAt;if(seen.has(key))return false;seen.add(key);return true;});
+  if(!V34_SELECTED_BACKUP)V34_SELECTED_BACKUP=V34_BACKUP_CACHE.find(x=>x.source!=='current')?.id||'current';
+  const count=document.getElementById('v34_backup_count');if(count)count.textContent='Ilość wersji: '+V34_BACKUP_CACHE.length;
+  tbody.innerHTML=V34_BACKUP_CACHE.map(x=>`<tr class="${String(V34_SELECTED_BACKUP)===String(x.id)?'selected':''}" onclick="v34SelectBackup('${v34Esc(x.id)}')"><td><span class="v34-archive">▰</span><b>${v34Esc(x.version)}</b>${x.current?'<em>AKTUALNA</em>':''}</td><td>${v34Esc(x.date||'—')}</td><td>${v34Esc(x.time||'—')}</td><td>${v34Esc(v34FmtBytes(x.size))}</td><td>${v34Esc(x.description||'Backup wersji')}</td><td class="v34-actions"><button class="share" onclick="event.stopPropagation();v34BackupPrimary('${v34Esc(x.id)}')" aria-label="Pobierz lub udostępnij">☁</button><button class="trash" onclick="event.stopPropagation();v34DeleteBackup('${v34Esc(x.id)}')" aria-label="Usuń">▣</button><button class="more" onclick="event.stopPropagation();v34BackupMenu('${v34Esc(x.id)}')" aria-label="Więcej">⋮</button></td></tr>`).join('');
+}
+function v34SelectBackup(id){V34_SELECTED_BACKUP=id;v34RenderBackups();v34Status('Wybrano backup '+(V34_BACKUP_CACHE.find(x=>String(x.id)===String(id))?.version||''));}
+function v34FindBackup(id){return V34_BACKUP_CACHE.find(x=>String(x.id)===String(id));}
+async function v34ResolveBlob(rec){
+  if(!rec)return null;if(rec.blob)return rec.blob;
+  if(rec.source==='catalog'&&rec.url){const r=await fetch(rec.url,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.blob();}
+  if(rec.source==='current'){const snap=await v34CreateSnapshot('Ręczny snapshot aktualnej wersji');return snap.blob;}
+  return null;
+}
+function v34DownloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name||'backup.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2500);}
+async function v34BackupPrimary(id){
+  try{const rec=v34FindBackup(id);if(!rec)return;const blob=await v34ResolveBlob(rec);if(!blob)throw 0;v34DownloadBlob(blob,rec.filename||('LM_Backup_'+rec.version+'.zip'));v34Status('Backup '+rec.version+' zapisany do plików telefonu.');await v34RenderBackups();}catch(e){v34Status('Nie udało się pobrać tego backupu.');}
+}
+async function v34DeleteBackup(id){
+  const rec=v34FindBackup(id);if(!rec)return;
+  if(rec.source==='current'){v34Status('Aktualnej wersji nie można usunąć z magazynu.');return;}
+  if(!confirm('Usunąć wpis backupu '+rec.version+' z magazynu?'))return;
+  try{if(rec.source==='auto'||rec.source==='import')await v34BackupDeleteLocal(rec.id);else if(rec.source==='catalog')localStorage.setItem('lm_hide_backup_'+rec.version,'1');V34_SELECTED_BACKUP=null;await v34RenderBackups();v34Status('Wpis backupu usunięty z widoku magazynu.');}catch(e){v34Status('Nie udało się usunąć wpisu.');}
+}
+function v34BackupMenu(id){
+  const rec=v34FindBackup(id);if(!rec)return;V34_SELECTED_BACKUP=id;
+  const m=document.createElement('div');m.className='v34-modal';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="v34-modal-card"><button class="x" onclick="this.closest('.v34-modal').remove()">×</button><h3>${v34Esc(rec.version)}</h3><p>${v34Esc(rec.description||'Backup wersji')}</p><div class="v34-modal-grid"><button onclick="v34BackupPrimary('${v34Esc(id)}');this.closest('.v34-modal').remove()">⬇ POBIERZ ZIP</button><button onclick="v34ShareBackup('menu','${v34Esc(id)}');this.closest('.v34-modal').remove()">↗ WYŚLIJ / UDOSTĘPNIJ</button><button onclick="v34SelectBackup('${v34Esc(id)}');this.closest('.v34-modal').remove()">✓ USTAW JAKO WYBRANY</button></div></div>`;document.body.appendChild(m);
+}
+function v34ParseVersion(name){const m=String(name||'').match(/V\d+(?:[._-]\d+){2,}/i);return m?m[0].toUpperCase().replace(/_/g,'.').replace(/-/g,'.'):'IMPORT';}
+async function v34HandleImport(files){
+  for(const f of Array.from(files||[])){const d=new Date(f.lastModified||Date.now());const rec={version:v34ParseVersion(f.name),createdAt:d.getTime(),date:v34LocalDate(d),time:v34LocalTime(d),size:f.size,description:'Import z plików / Dokumentów telefonu',filename:f.name,blob:f,source:'import'};await v34BackupPut(rec);}await v34RenderBackups();v34Status('Zaimportowano plik do MAGAZYNU BACKUPÓW.');
+}
+function v34ImportClick(){document.getElementById('v34_backup_file')?.click();}
+async function v34ShareBackup(channel,id){
+  let rec=v34FindBackup(id||V34_SELECTED_BACKUP)||V34_BACKUP_CACHE.find(x=>x.source!=='current')||V34_BACKUP_CACHE[0];if(!rec){v34Status('Najpierw wybierz backup.');return;}
+  V34_SELECTED_BACKUP=rec.id;
+  try{
+    const blob=await v34ResolveBlob(rec);if(!blob)throw 0;const fname=rec.filename||('LM_Technic_Energy_'+rec.version+'.zip');const file=new File([blob],fname,{type:'application/zip'});const text='L&M Technic Energy — backup '+rec.version+'.';
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){await navigator.share({title:'L&M Technic Energy '+rec.version,text,files:[file]});return;}
+    v34DownloadBlob(blob,fname);
+    if(channel==='email')location.href='mailto:?subject='+encodeURIComponent('L&M Technic Energy — '+rec.version)+'&body='+encodeURIComponent(text+' Plik ZIP został zapisany w telefonie — dołącz go do wiadomości.');
+    else if(channel==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(text+' Plik ZIP został zapisany w telefonie.'),'_blank');
+    else if(channel==='gpchat')window.open('https://chatgpt.com/','_blank');
+    else v34Status('Plik zapisany. Otwórz systemowe Udostępnij w telefonie.');
+  }catch(e){if(e?.name!=='AbortError')v34Status('Udostępnianie nie zostało uruchomione.');}
+}
+async function v34CheckUpdate(showToast=true){
+  try{if(showToast)v34Status('Sprawdzam najnowszą wersję…');v34SetProgress(8,'Sprawdzanie wersji…','Łączę z repozytorium L&M Technic Energy');const info=await v30ServerVersion();v34SetAvailable(info);v34SetProgress(100,info.version!==V30_APP_VERSION?'Nowa wersja jest dostępna.':'Wersja aktualna.','Serwer: '+(info.version||'—')+' • Zainstalowana: '+V30_APP_VERSION);if(showToast)v34Status(info.version!==V30_APP_VERSION?'Dostępna wersja '+info.version+'.':'Masz najnowszą wersję '+V30_APP_VERSION+'.');return info.version!==V30_APP_VERSION;}catch(e){v34SetProgress(0,'Nie udało się sprawdzić wersji.','Sprawdź połączenie z internetem.');if(showToast)v34Status('Nie udało się sprawdzić aktualizacji.');return false;}
+}
+async function v34UpdateNow(){
+  if(location.protocol==='file:'||location.protocol==='content:'){v34Status('Aktualizacja wymaga uruchomienia z HTTPS.');return;}
+  try{
+    v34SetProgress(3,'Przygotowuję aktualizację…','Sprawdzanie pakietu i stanu aplikacji');const info=await v30ServerVersion();v34SetAvailable(info);
+    if(!info.version||info.version===V30_APP_VERSION){v34SetProgress(100,'Masz najnowszą wersję.','Zainstalowana: '+V30_APP_VERSION);v34Status('Aplikacja jest już aktualna: '+V30_APP_VERSION+'.');return;}
+    v34SetProgress(12,'Tworzę bezpieczny backup…','Dane lokalne pozostają na telefonie');await v34CreateSnapshot('Automatyczny backup przed aktualizacją do '+info.version);
+    const pre=['./version.json','./index.html','./app-main.js','./service-worker.js'];for(let i=0;i<pre.length;i++){v34SetProgress(20+i*10,'Pobieram nową wersję…','Plik '+(i+1)+' z '+pre.length+': '+pre[i].replace('./',''));const r=await fetch(pre[i]+'?update='+Date.now()+i,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);await r.arrayBuffer();}
+    v34SetProgress(62,'Instaluję rdzeń aplikacji…','Service Worker przełącza wersję na '+info.version);const reg=await v30GetRegistration();if(!reg)throw new Error('Brak Service Workera');let controllerChanged=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{controllerChanged=true;},{once:true});await reg.update();
+    for(let i=0;i<22;i++){if(reg.waiting){try{reg.waiting.postMessage({type:'SKIP_WAITING'});}catch(e){}}v34SetProgress(65+i*1.2,'Aktywuję nową wersję…','Nie zamykaj aplikacji • '+info.version);if(controllerChanged)break;await v34Delay(500);}
+    v34SetProgress(94,'Kończę aktualizację…','Odświeżam pliki aplikacji');
+    if(!controllerChanged){try{await reg.unregister();}catch(e){}v34SetProgress(98,'Wymuszam świeże uruchomienie…','Twoje dane i backupy pozostają bez zmian');await v34Delay(450);location.replace('./?fresh='+encodeURIComponent(info.version)+'&t='+Date.now());return;}
+    v34SetProgress(100,'Aktualizacja gotowa.','Uruchamiam '+info.version);await v34Delay(500);location.reload();
+  }catch(e){v34SetProgress(0,'Aktualizacja przerwana.','Dane są bezpieczne. Spróbuj ponownie.');v34Status('Aktualizacja nie została dokończona. Backup został zachowany.');}
+}
+async function v34ClearCache(){
+  if(!confirm('Wyczyścić pamięć podręczną aplikacji? Dane klientów, faktury i MAGAZYN BACKUPÓW pozostaną bez zmian.'))return;
+  try{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lm-technic-energy-')).map(k=>caches.delete(k)));const reg=await navigator.serviceWorker.getRegistration('./');if(reg)await reg.unregister();v34Status('Cache wyczyszczony. Odświeżam czystą wersję aplikacji…');setTimeout(()=>location.replace('./?cache='+Date.now()),700);}catch(e){v34Status('Nie udało się wyczyścić cache.');}
+}
+async function v34Info(){
+  let info=V34_LAST_SERVER_INFO;try{if(!info)info=await v30ServerVersion();}catch(e){}
+  const m=document.createElement('div');m.className='v34-modal';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="v34-modal-card"><button class="x" onclick="this.closest('.v34-modal').remove()">×</button><h3>INFORMACJE O WERSJI</h3><p><b>Zainstalowana:</b> ${v34Esc(V30_APP_VERSION)}</p><p><b>Na serwerze:</b> ${v34Esc(info?.version||'brak danych')}</p><p>${v34Esc(info?.notes||'Europejski Kalkulator Peletu 1.2 PREMIUM — L&M Technic Energy.')}</p></div>`;document.body.appendChild(m);
+}
+function v34Clock(){const d=new Date(),date=document.getElementById('v34_date'),time=document.getElementById('v34_time'),on=document.getElementById('v34_online');if(date)date.textContent=v34LocalDate(d);if(time)time.textContent=d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});if(on){on.textContent=navigator.onLine?'ONLINE':'OFFLINE';on.classList.toggle('off',!navigator.onLine);}}
+
+function renderSettingsV30(){
+  const app=document.getElementById('app');app.innerHTML='';const installed=v30IsStandalone();const d=document.createElement('div');d.className='v34-settings';
+  d.innerHTML=`<header class="v34-head"><button class="v34-back" onclick="go('home')" aria-label="Wróć">←</button><div class="v34-brand"><strong>L&amp;M</strong><small>TECHNIC ENERGY</small></div><div class="v34-title"><b>⚙ USTAWIENIA</b><span>INSTALACJA • WERSJA • AKTUALIZACJE</span></div><div class="v34-online-card"><div><i></i><b id="v34_online">${navigator.onLine?'ONLINE':'OFFLINE'}</b></div><div>▱ BAZA LOKALNA</div><div>▣ <span id="v34_date">${v34LocalDate()}</span></div><div>◷ <span id="v34_time">${new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</span></div></div></header>
+  <main class="v34-body"><section class="v34-stats"><div><span>WERSJA</span><b>${V30_APP_VERSION}</b></div><div><span>TRYB</span><b class="lime">${installed?'ZAINSTALOWANA':'PRZEGLĄDARKA'}</b></div><div><span>AKTUALIZACJE</span><b class="lime">AUTOMATYCZNE</b></div></section>
+  <section class="v34-card update"><h2>AKTUALIZACJA APLIKACJI</h2><p>Aplikacja uruchamia się z lokalnej kopii. Internet służy do sprawdzania i pobierania aktualizacji w tle.</p><div class="v34-available"><div><b id="v34_available_title">Sprawdzam najnowszą wersję…</b><span id="v34_available_note">Łączenie z repozytorium L&amp;M Technic Energy.</span></div><button id="v30_update_btn">↻ UAKTUALNIJ APLIKACJĘ</button></div><div class="v34-progress"><div class="v34-progress-top"><span id="v34_progress_label">Gotowy do aktualizacji.</span><b id="v34_progress_pct">0%</b></div><div class="v34-track"><i id="v34_progress_bar"></i></div><div class="v34-progress-bottom"><span>⇩ <b id="v34_progress_detail">Sprawdzanie wersji uruchomi się automatycznie.</b></span></div></div><div id="v30_action_status" class="v34-statusline">System aktualizacji gotowy.</div>
+  <div class="v34-tools"><button id="v30_install_btn" class="blue"><i>⇩</i><b>ZAINSTALUJ<br>APLIKACJĘ</b><span>Po pobraniu pliku</span></button><button id="v30_check_btn" class="green"><i>↻</i><b>SPRAWDŹ<br>AKTUALIZACJĘ</b><span>Sprawdź dostępność</span></button><button id="v34_import_btn" class="gold"><i>↥</i><b>IMPORTUJ<br>ZAPISANY PLIK</b><span>Z plików w telefonie</span></button><button id="v34_info_btn" class="blue"><i>ⓘ</i><b>INFORMACJE<br>O WERSJI</b><span>Szczegóły zmian</span></button><button id="v34_cache_btn" class="red"><i>♲</i><b>WYCZYŚĆ<br>CACHE</b><span>Odzyskaj miejsce</span></button></div><input id="v34_backup_file" type="file" accept=".zip,.json,application/zip,application/json" multiple hidden></section>
+  <section class="v34-card backups"><div class="v34-card-title"><h2>▱ MAGAZYN BACKUPÓW <small>(ZAPISANE WERSJE)</small></h2><span id="v34_backup_count">Ilość wersji: —</span></div><div class="v34-table-wrap"><table><thead><tr><th>WERSJA</th><th>DATA</th><th>GODZINA</th><th>ROZMIAR</th><th>OPIS (AUTOMATYCZNY)</th><th>AKCJE</th></tr></thead><tbody id="v34_backup_body"><tr><td colspan="6">Ładuję magazyn backupów…</td></tr></tbody></table></div><div class="v34-backup-note">♢ Backup danych tworzony automatycznie przed każdą aktualizacją. Wersje ZIP pobrane ode mnie możesz dodać przyciskiem <b>IMPORTUJ ZAPISANY PLIK</b> — przeglądarka nie ma prawa samodzielnie czytać całego folderu Dokumenty bez Twojego wyboru.</div></section>
+  <section class="v34-card sharebox"><h2>WYŚLIJ DO / OTWÓRZ MENU</h2><p>Wybierz backup w tabeli, a następnie sposób udostępnienia.</p><div class="v34-share-grid"><button class="email" onclick="v34ShareBackup('email')"><i>✉</i><b>EMAIL</b><span>Wyślij przez e-mail</span></button><button class="whatsapp" onclick="v34ShareBackup('whatsapp')"><i>◉</i><b>WHATSAPP</b><span>Wyślij przez WhatsApp</span></button><button class="gpchat" onclick="v34ShareBackup('gpchat')"><i>♙</i><b>GPCHAT</b><span>Wyślij przez GPChat</span></button><button class="menu" onclick="v34ShareBackup('menu')"><i>▱</i><b>OTWÓRZ MENU</b><span>Więcej opcji</span></button></div></section></main>
+  <nav class="v34-nav"><button onclick="go('home')"><i>⌂</i>START</button><button onclick="go('suppliers')"><i>🚚</i>DOSTAWCY</button><button onclick="go('marketsEU')"><i>🌍</i>RYNKI EU</button><button onclick="go('clients')"><i>👥</i>KLIENCI</button><button class="active"><i>⚙</i>USTAWIENIA</button></nav>`;
+  app.appendChild(d);
+  const bind=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();fn();},{passive:false});};
+  bind('v30_install_btn',v30Install);bind('v30_update_btn',v34UpdateNow);bind('v30_check_btn',()=>v34CheckUpdate(true));bind('v34_import_btn',v34ImportClick);bind('v34_info_btn',v34Info);bind('v34_cache_btn',v34ClearCache);
+  document.getElementById('v34_backup_file')?.addEventListener('change',e=>v34HandleImport(e.target.files));
+  v34Clock();setTimeout(()=>v34CheckUpdate(false),180);v34RenderBackups();window.scrollTo({top:0,left:0,behavior:'auto'});
+}
+setInterval(v34Clock,30000);
+
+
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   navigator.serviceWorker.register('./service-worker.js').then(reg=>{
     reg.addEventListener('updatefound',()=>{const nw=reg.installing;if(nw)nw.addEventListener('statechange',()=>{if(nw.state==='installed' && navigator.serviceWorker.controller){V30_updateReady=true;toast('Nowa wersja gotowa — wejdź w USTAWIENIA i naciśnij UAKTUALNIJ.');}})});
@@ -2211,28 +2382,9 @@ function eu31DateOnly(s){if(!s)return '—';const d=new Date(s);return Number.is
 function eu31IsNew(x){const d=new Date(x.date_added||x.date_updated||0);return !Number.isNaN(d)&&((Date.now()-d.getTime())<=7*86400000);}
 function eu31CountryName(c){return EU31_COUNTRY_NAMES[c]||c;}
 function eu31Flag(code,cls=''){
-  let inner='';
-  if(code==='PL')inner='<rect width="120" height="42" fill="#fff"/><rect y="42" width="120" height="42" fill="#dc143c"/>';
-  else if(code==='DE')inner='<rect width="120" height="28" fill="#050505"/><rect y="28" width="120" height="28" fill="#dd0000"/><rect y="56" width="120" height="28" fill="#ffce00"/>';
-  else if(code==='AT')inner='<rect width="120" height="28" fill="#ed2939"/><rect y="28" width="120" height="28" fill="#fff"/><rect y="56" width="120" height="28" fill="#ed2939"/>';
-  else if(code==='CH')inner='<rect width="120" height="84" fill="#d52b1e"/><rect x="51" y="17" width="18" height="50" fill="#fff"/><rect x="35" y="33" width="50" height="18" fill="#fff"/>';
-  else if(code==='LT')inner='<rect width="120" height="28" fill="#fdb913"/><rect y="28" width="120" height="28" fill="#006a44"/><rect y="56" width="120" height="28" fill="#c1272d"/>';
-  else if(code==='IT')inner='<rect width="40" height="84" fill="#009246"/><rect x="40" width="40" height="84" fill="#fff"/><rect x="80" width="40" height="84" fill="#ce2b37"/>';
-  else if(code==='FR')inner='<rect width="40" height="84" fill="#0055a4"/><rect x="40" width="40" height="84" fill="#fff"/><rect x="80" width="40" height="84" fill="#ef4135"/>';
-  else if(code==='NL')inner='<rect width="120" height="28" fill="#ae1c28"/><rect y="28" width="120" height="28" fill="#fff"/><rect y="56" width="120" height="28" fill="#21468b"/>';
-  else if(code==='BE')inner='<rect width="40" height="84" fill="#111"/><rect x="40" width="40" height="84" fill="#ffd90c"/><rect x="80" width="40" height="84" fill="#ef3340"/>';
-  else if(code==='DK')inner='<rect width="120" height="84" fill="#c60c30"/><rect x="37" width="9" height="84" fill="#fff"/><rect y="37" width="120" height="9" fill="#fff"/>';
-  else if(code==='CZ')inner='<rect width="120" height="42" fill="#fff"/><rect y="42" width="120" height="42" fill="#d7141a"/><polygon points="0,0 58,42 0,84" fill="#11457e"/>';
-  else if(code==='SK')inner='<rect width="120" height="28" fill="#fff"/><rect y="28" width="120" height="28" fill="#0b4ea2"/><rect y="56" width="120" height="28" fill="#ee1c25"/><path d="M25 22 h28 v34 q-14 16-28 0z" fill="#ee1c25" stroke="#fff" stroke-width="3"/><path d="M39 29 v21 M30 36 h18 M33 43 h12" stroke="#fff" stroke-width="3"/>';
-  else inner='<rect width="120" height="84" fill="#163e2c"/><text x="60" y="52" text-anchor="middle" fill="#eab532" font-size="28">'+eu31Esc(code)+'</text>';
-  const big=String(cls||'').includes('big');
-  return `<div class="eu31-flagbox ${cls}"><svg viewBox="0 0 120 84" role="img" aria-label="Flaga ${eu31Esc(eu31CountryName(code))}">
-  <defs>
-    <linearGradient id="shine${code}${big?'B':'S'}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".48"/><stop offset=".42" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
-    <filter id="wave${code}${big?'B':'S'}" x="-10%" y="-15%" width="120%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.035" numOctaves="1" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="${big?7:4}" xChannelSelector="R" yChannelSelector="G"/></filter>
-  </defs>
-  <clipPath id="clip${code}${big?'B':'S'}"><path d="M0 5 C18 0 35 9 53 5 C72 1 91 10 120 5 L120 79 C98 74 80 84 61 79 C42 75 22 85 0 79 Z"/></clipPath><g clip-path="url(#clip${code}${big?'B':'S'})" filter="url(#wave${code}${big?'B':'S'})">${inner}<rect width="120" height="84" fill="url(#shine${code}${big?'B':'S'})"/></g>
-  </svg></div>`;
+  const safe=EU31_COUNTRY_ORDER.includes(code)?code:'PL';
+  const idx=Math.max(0,EU31_COUNTRY_ORDER.indexOf(safe)),x=(idx%2)*142,y=Math.floor(idx/2)*122,id='flagclip'+safe+(String(cls||'').includes('big')?'B':'S');
+  return `<div class="eu31-flagbox ${cls}"><svg class="eu31-master-flag" viewBox="0 0 142 122" role="img" aria-label="Flaga ${eu31Esc(eu31CountryName(code))}" preserveAspectRatio="xMidYMid meet"><defs><clipPath id="${id}"><rect x="0" y="0" width="142" height="122"/></clipPath></defs><g clip-path="url(#${id})"><image href="./MASTER_FLAGS.png" x="${-x}" y="${-y}" width="284" height="732" preserveAspectRatio="none"/></g></svg></div>`;
 }
 function eu31Fallback(){return {version:'offline',generated_at:null,contractors:[],countries:EU31_COUNTRY_ORDER};}
 async function eu31Load(force=false){
