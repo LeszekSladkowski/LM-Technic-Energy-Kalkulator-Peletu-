@@ -1,5 +1,5 @@
 {
-  "version": "V31.2.6",
-  "build": "2026-08-20T23:16:00+02:00",
-  "notes": "PULPIT MASTER SCALE FIT. Naprawiono faktyczną przyczynę przycięcia: aktywny pulpit V21 miał stałą szerokość 941 px i omijał wcześniejszą regułę .screen.portrait. Teraz cały PULPIT MASTER wraz z aktywnymi hotspotami jest skalowany jako jedna całość dokładnie do visualViewport telefonu. Zachowano grafikę MASTER, moduły, RYNKI EU ekran 2/3, CRM, FAKTURY PREMIUM i aktualizacje."
+  "version": "V31.2.7",
+  "build": "2026-08-21T09:36:00+02:00",
+  "notes": "START FIX 1: szybki start PWA. Duże obrazy zostały przeniesione z 20 MB pliku HTML do osobnych zasobów bez zmiany grafiki; główny skrypt jest ładowany osobno i uruchamia interfejs po DOMContentLoaded zamiast czekać na pełne window.load. Dodano pełnoekranowy szybki ekran przejściowy oparty na istniejącym Pulpicie MASTER. Moduły, dane, grafiki i zatwierdzone karty pozostają bez zmian."
 }
