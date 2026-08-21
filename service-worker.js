@@ -1,4 +1,4 @@
-const APP_VERSION='V31.2.7-START-FIX-1';
+const APP_VERSION='V31.3.0-RYNKI-EU-MASTER-FIX';
 const CACHE='lm-technic-energy-'+APP_VERSION;
 const PREFIX='lm-technic-energy-';
 const CORE=["./index.html","./app-main.js","./assets/home-master.jpg","./invoice-master.png","./invoice-v31.css","./invoice-v31.js","./contractors-eu.json","./logo-lm.png","./crm-status-v32.css","./crm-status-v32.js","./assistant-messages.json"];

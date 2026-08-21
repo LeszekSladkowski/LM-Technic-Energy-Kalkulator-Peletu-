@@ -1,4 +1,4 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover"><meta name="theme-color" content="#020806"><title>L&M Technic Energy — Europejski Kalkulator Peletu 1.2 PREMIUM — V31.2.7 START FIX 1</title>
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#020806"><title>L&M Technic Energy — Europejski Kalkulator Peletu 1.2 PREMIUM — V31.3.0 RYNKI EU MASTER FIX</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -1193,6 +1193,58 @@ button:focus-visible,
 .eu31-country-grid{grid-template-columns:1fr 1fr}
 .eu31-country{min-height:150px}
 @media(max-width:700px){.eu31-logo{width:350px;height:130px}}
+</style>
+
+
+<style id="v31-3-final-fixes">
+/* ===== V31.3.0 — FINAL: automatyczne dopasowanie + zatwierdzone karty RYNKI EU 1/2/3 ===== */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important;background:#000;overscroll-behavior-x:none}
+#app{width:100%;max-width:100%;overflow-x:hidden;background:#000}
+#lm-fast-boot{width:100vw;max-width:100vw;overflow:hidden;background:#000}
+#lm-fast-boot img{display:block;width:100%;height:auto;max-width:100%;user-select:none;-webkit-user-drag:none}
+
+/* KARTA 1 — RYNKI EUROPY, ostateczny MASTER */
+.eu31-overview-page .eu31-overview-hero{padding:26px 28px 18px;text-align:center;background:radial-gradient(circle at 50% 0,#0a2c1a 0,#03130b 47%,#000 100%)}
+.eu31-overview-page .eu31-overview-title{margin:0;color:#f5b227;font:900 62px/1 Arial,Helvetica,sans-serif;letter-spacing:2px;text-shadow:0 3px 7px #000,0 0 14px rgba(255,184,36,.28)}
+.eu31-overview-page .eu31-overview-sub{margin-top:12px;color:#fff;font-size:24px;font-weight:500}
+.eu31-overview-page .eu31-wrap{padding:16px 30px 0}
+.eu31-overview-page .eu31-summary{min-height:96px;border-radius:22px}
+.eu31-overview-page .eu31-stat{font-size:17px;padding:8px 14px}.eu31-overview-page .eu31-stat b{font-size:20px}.eu31-overview-page .eu31-stat small{font-size:12px}.eu31-overview-page .eu31-stat-ico{font-size:30px}
+.eu31-overview-page .eu31-search{height:72px;margin-top:18px;border-radius:17px}.eu31-overview-page .eu31-search input{font-size:25px}
+.eu31-overview-page .eu31-filters{margin:18px 0;gap:18px}.eu31-overview-page .eu31-filter{height:56px;min-width:185px;font-size:19px}
+.eu31-overview-page .eu31-country-grid{gap:10px 14px}
+.eu31-overview-page .eu31-country{min-height:112px;grid-template-columns:145px 1fr;padding:8px 14px;border-radius:15px}
+.eu31-overview-page .eu31-country h3{font-size:28px;margin-bottom:3px}.eu31-overview-page .eu31-country p{font-size:18px}.eu31-overview-page .eu31-newtag{margin-top:5px;font-size:14px;padding:3px 9px}
+.eu31-overview-page .eu31-recent{min-height:70px;margin-top:12px;padding:11px 22px}.eu31-overview-page .eu31-recent strong{font-size:18px}.eu31-overview-page .eu31-recent span{font-size:15px}
+.eu31-overview-page .eu31-syncbar{min-height:44px;margin-top:10px;font-size:14px}
+.eu31-overview-page .eu31-bottom.home-master{height:72px;margin-top:10px}
+.eu31-overview-page .eu31-nav{font-size:13px}.eu31-overview-page .eu31-nav .i{font-size:26px;margin-bottom:2px}
+
+/* Falujące flagi ze złotym masztem — ten sam standard na karcie 1, 2 i 3 */
+.eu31-flagbox:not(.big):before{content:'';position:absolute;left:-8px;top:-10px;width:5px;height:104px;background:linear-gradient(90deg,#5a3000,#ffd768 45%,#a76a06 72%,#442100);border-radius:5px;box-shadow:0 0 4px rgba(255,204,72,.6);z-index:3}
+.eu31-flagbox:not(.big):after{content:'';position:absolute;left:-14px;top:-18px;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6af,#d69b23 48%,#5a3000 78%);z-index:4}
+.eu31-overview-page .eu31-flagbox{width:126px;height:84px;margin-left:8px}
+.eu31-overview-page .eu31-flagbox svg{border-radius:5px;overflow:visible;box-shadow:none}
+
+/* KARTA 2 — zatwierdzone kolory akcji */
+.eu31-country-page .eu31-action.phone{color:#8cff00;border-color:#8cff00;background:radial-gradient(circle at 50% 28%,rgba(90,255,0,.20),transparent 46%),linear-gradient(180deg,#0a3511,#031307);box-shadow:inset 0 0 0 2px rgba(173,255,119,.28),0 0 13px rgba(80,255,0,.55)}
+.eu31-country-page .eu31-action.map{color:#1297ff;border-color:#1297ff;background:radial-gradient(circle at 50% 28%,rgba(0,139,255,.22),transparent 46%),linear-gradient(180deg,#062b49,#03101d);box-shadow:inset 0 0 0 2px rgba(114,195,255,.28),0 0 13px rgba(0,132,255,.58)}
+.eu31-country-page .eu31-action.details{color:#ff7900;border-color:#ff7900;background:radial-gradient(circle at 50% 28%,rgba(255,121,0,.24),transparent 46%),linear-gradient(180deg,#4a2100,#170b02);box-shadow:inset 0 0 0 2px rgba(255,189,116,.28),0 0 14px rgba(255,121,0,.65)}
+.eu31-country-page .eu31-action.phone .svg-fill{fill:#8cff00}.eu31-country-page .eu31-action.map .svg-fill{fill:#1297ff}.eu31-country-page .eu31-action.details .svg-fill{fill:#ff7900}.eu31-country-page .eu31-action.details .svg-stroke{stroke:#ff7900}
+
+/* KARTA 3 CRM — kraj + flaga, prywatność RODO i Orange */
+.eu32-country-strip{min-height:96px;margin:0 0 10px;border:1.5px solid var(--eu32-line);border-radius:14px;background:linear-gradient(150deg,#052b1a,#01120b);display:grid;grid-template-columns:1fr auto;align-items:center;padding:8px 14px;box-shadow:inset 0 0 18px rgba(0,0,0,.35)}
+.eu32-country-left{display:flex;align-items:center;gap:16px;min-width:0}.eu32-country-left .eu31-flagbox{width:116px;height:76px;flex:0 0 auto}.eu32-country-left h2{margin:0;color:#fff;font-size:31px;line-height:1}.eu32-country-left small{display:block;margin-top:5px;color:#f2b52b;font-size:12px;font-weight:800;letter-spacing:.3px}
+.eu32-country-stats{display:flex;gap:16px;align-items:center;color:#e8eee9;font-size:12px;text-align:right}.eu32-country-stats b{display:block;color:#fff;font-size:17px}.eu32-country-stats .orange{color:#ff7900}
+.eu32-firmline{display:flex;align-items:flex-start;gap:6px}.eu32-firmline b{flex:1;min-width:0}
+.eu32-private-toggle{flex:0 0 auto;width:27px;height:27px;border-radius:7px;border:1.5px solid #fff!important;background:linear-gradient(#fff,#e9e9e9)!important;color:#111!important;display:grid;place-items:center;font-size:15px;font-weight:900;line-height:1;box-shadow:0 0 8px rgba(255,255,255,.38);cursor:pointer;padding:0!important}
+.eu32-private-toggle.open{background:#fff5e7!important;border-color:#ff7900!important;color:#ff7900!important;box-shadow:0 0 10px rgba(255,121,0,.55)}
+.eu32-act.details{color:#ff7900!important;border-color:#ff7900!important;background:linear-gradient(#492100,#160a01)!important;box-shadow:0 0 11px rgba(255,121,0,.68),inset 0 0 9px rgba(255,121,0,.16)!important}
+.eu32-offer{border-color:#ff7900!important;background:linear-gradient(#ff8d22,#d85a00)!important;color:#fff!important;box-shadow:0 0 12px rgba(255,121,0,.62)!important}
+.eu32-detail-actions .offer{color:#ff7900!important;border-color:#ff7900!important}
+.eu32-detail{border-color:#ffb24d;background:linear-gradient(105deg,#fffdf4,#f2eee5)}
+.eu32-privacy-note{grid-column:1/-1;color:#6b5a3f;font-size:9px;font-weight:800;border-bottom:1px solid #d9d0bf;padding:0 0 6px;margin-bottom:1px}
+@media(max-width:620px){.eu32-country-strip{min-height:80px;padding:6px 9px}.eu32-country-left{gap:10px}.eu32-country-left .eu31-flagbox{width:90px;height:60px}.eu32-country-left h2{font-size:24px}.eu32-country-left small{font-size:9px}.eu32-country-stats{font-size:9px;gap:8px}.eu32-country-stats b{font-size:13px}.eu32-private-toggle{width:20px;height:20px;border-radius:5px;font-size:11px}}
 </style>
 
 <body><div id="app"><div id="lm-fast-boot" aria-hidden="true"><img src="./assets/home-master.jpg" alt=""></div></div><div class="toast" id="toast"></div><script defer src="./app-main.js"></script><script defer src="./crm-status-v32.js"></script><script defer src="./invoice-v31.js"></script>

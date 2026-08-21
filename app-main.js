@@ -13,6 +13,30 @@ const V24_BIZPLAN_PDF_NAME='L&M_Technic_Energy_Biznesplan_i_materialy_MASTER_25_
 const state={qty:26};
 try{ const q=Number(localStorage.getItem('lm_qty')); if(q) state.qty=q; }catch(e){}
 function saveQty(){ try{localStorage.setItem('lm_qty',String(state.qty));}catch(e){} }
+
+/* V31.3 — automatyczne dopasowanie stałych ekranów MASTER do szerokości telefonu.
+   Używa natywnego zoom Chromium, więc zachowuje proporcje, hotspoty i pionowe przewijanie. */
+function lmAutoFit(root,designWidth=941){
+  if(!root)return;
+  const apply=()=>{
+    const vv=window.visualViewport;
+    const vw=Math.max(1,Math.round(vv?.width||document.documentElement.clientWidth||window.innerWidth||designWidth));
+    const scale=Math.min(1,vw/designWidth);
+    root.style.width=designWidth+'px';root.style.minWidth=designWidth+'px';root.style.maxWidth='none';
+    root.style.zoom=String(scale);
+    root.dataset.lmFitScale=String(scale);
+    document.documentElement.style.overflowX='hidden';document.body.style.overflowX='hidden';
+  };
+  apply();
+  if(!window.__lmFitListener){
+    window.__lmFitListener=()=>document.querySelectorAll('[data-lm-fit-scale]').forEach(el=>{
+      const dw=Number(el.dataset.lmDesignWidth||941);const vv=window.visualViewport;const vw=Math.max(1,Math.round(vv?.width||document.documentElement.clientWidth||window.innerWidth||dw));el.style.zoom=String(Math.min(1,vw/dw));
+    });
+    window.addEventListener('resize',window.__lmFitListener,{passive:true});
+    window.visualViewport?.addEventListener('resize',window.__lmFitListener,{passive:true});
+  }
+  root.dataset.lmDesignWidth=String(designWidth);
+}
 function fmt(n,d=2){return Number(n).toLocaleString('pl-PL',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function money(n){return fmt(n,2)+' zł';}
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>e.classList.remove('show'),2200)}
@@ -1673,6 +1697,7 @@ function v21Home(){
   root.appendChild(bottom);
 
   app.appendChild(root);
+  lmAutoFit(root,941);
   window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 
@@ -2174,7 +2199,7 @@ if('serviceWorker' in navigator && location.protocol.startsWith('http')){
 /* ===== V31.1 — RYNKI EU LIVE ===== */
 const EU31_DATA_URL='./contractors-eu.json';
 const EU31_CACHE_KEY='lm_eu_contractors_cache_v1';
-const EU31_COUNTRY_ORDER=['PL','DE','CZ','SK','AT','CH','LT','IT'];
+const EU31_COUNTRY_ORDER=['PL','DE','CZ','SK','AT','CH','LT','IT','FR','NL','BE','DK'];
 const EU31_COUNTRY_NAMES={PL:'Polska',DE:'Niemcy',CZ:'Czechy',SK:'Słowacja',AT:'Austria',CH:'Szwajcaria',LT:'Litwa',IT:'Włochy',FR:'Francja',NL:'Holandia',BE:'Belgia',DK:'Dania'};
 const EU31_STATE={db:null,country:null,filter:'all',q:'',syncing:false};
 
@@ -2202,9 +2227,9 @@ function eu31Flag(code,cls=''){
   return `<div class="eu31-flagbox ${cls}"><svg viewBox="0 0 120 84" role="img" aria-label="Flaga ${eu31Esc(eu31CountryName(code))}">
   <defs>
     <linearGradient id="shine${code}${big?'B':'S'}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".48"/><stop offset=".42" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
-    <filter id="wave${code}${big?'B':'S'}" x="-10%" y="-15%" width="120%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.035" numOctaves="1" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="${big?7:1}" xChannelSelector="R" yChannelSelector="G"/></filter>
+    <filter id="wave${code}${big?'B':'S'}" x="-10%" y="-15%" width="120%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.035" numOctaves="1" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="${big?7:4}" xChannelSelector="R" yChannelSelector="G"/></filter>
   </defs>
-  <g ${big?`filter="url(#wave${code}B)"`:''}>${inner}<rect width="120" height="84" fill="url(#shine${code}${big?'B':'S'})"/></g>
+  <g filter="url(#wave${code}${big?'B':'S'})">${inner}<rect width="120" height="84" fill="url(#shine${code}${big?'B':'S'})"/></g>
   </svg></div>`;
 }
 function eu31Fallback(){return {version:'offline',generated_at:null,contractors:[],countries:EU31_COUNTRY_ORDER};}
@@ -2223,6 +2248,7 @@ function eu31Counts(code){const arr=(EU31_STATE.db?.contractors||[]).filter(x=>x
 function eu31Filtered(code){let a=(EU31_STATE.db?.contractors||[]).filter(x=>x.country===code);if(EU31_STATE.filter==='supplier')a=a.filter(x=>x.type==='supplier');if(EU31_STATE.filter==='client')a=a.filter(x=>x.type==='client');const q=eu31Norm(EU31_STATE.q);if(q)a=a.filter(x=>eu31Norm([x.company,x.city,x.product,x.contact_person,x.phone,x.email,x.status].join(' ')).includes(q));return a.sort((a,b)=>(eu31IsNew(b)-eu31IsNew(a))||String(a.company).localeCompare(String(b.company),'pl'));}
 function eu31Nav(){const cls=EU31_STATE.country?'country-master':'home-master';return `<div class="eu31-bottom ${cls}"><button class="eu31-nav" onclick="go('home')"><span class="i">⌂</span>START</button><button class="eu31-nav" onclick="go('suppliers')"><span class="i">🤝</span>DOSTAWCY</button><button class="eu31-nav active" onclick="go('marketsEU')"><span class="i">◎</span>RYNKI EU</button><button class="eu31-nav" onclick="go('settings')"><span class="i">⚙</span>USTAWIENIA</button></div>`;}
 function eu31Shell(sub){return `<div class="eu31-top"><button class="eu31-topbtn eu31-back" onclick="${EU31_STATE.country?"eu31Home()":"go('home')"}">←</button><img class="eu31-logo" src="./assets/embedded-34-45708673804e.png" alt="L&M Technic Energy"><button class="eu31-topbtn eu31-searchbtn" onclick="document.querySelector('.eu31-search input')?.focus()">⌕</button><button class="eu31-topbtn eu31-gear" onclick="go('settings')">⚙</button></div><div class="eu31-hero"><h1 class="eu31-title">RYNKI EUROPY</h1><div class="eu31-subtitle">${sub}</div></div>`;}
+function eu31OverviewShell(){return `<div class="eu31-overview-hero"><h1 class="eu31-overview-title">RYNKI EUROPY</h1><div class="eu31-overview-sub">Baza kontrahentów L&amp;M Technic Energy</div></div>`;}
 function eu31InputHandler(el){EU31_STATE.q=el.value;if(EU31_STATE.country)eu31Country(EU31_STATE.country,false);else eu31Home(false);}
 function eu31SetFilter(f){EU31_STATE.filter=f;if(EU31_STATE.country)eu31Country(EU31_STATE.country,false);else eu31Home(false);}
 function eu31Filters(){return `<div class="eu31-filters"><button class="eu31-filter ${EU31_STATE.filter==='all'?'active':''}" onclick="eu31SetFilter('all')">WSZYSCY</button><button class="eu31-filter ${EU31_STATE.filter==='client'?'active':''}" onclick="eu31SetFilter('client')">KLIENCI</button><button class="eu31-filter ${EU31_STATE.filter==='supplier'?'active':''}" onclick="eu31SetFilter('supplier')">DOSTAWCY</button></div>`;}
@@ -2231,9 +2257,9 @@ function eu31Home(render=true){
   EU31_STATE.country=null;if(render===true)EU31_STATE.q='';const db=EU31_STATE.db||eu31Fallback();const codes=eu31Countries();
   const filteredCodes=codes.filter(code=>{if(!EU31_STATE.q)return true;const q=eu31Norm(EU31_STATE.q);return eu31Norm(eu31CountryName(code)).includes(q)||eu31Filtered(code).length>0});
   const all=db.contractors||[], new7=all.filter(eu31IsNew).length, activeCountries=new Set(all.map(x=>x.country)).size;
-  const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31';
-  root.innerHTML=eu31Shell('Baza kontrahentów L&M Technic Energy')+`<div class="eu31-wrap"><div class="eu31-summary"><div class="eu31-stat"><span class="eu31-stat-ico">◎</span><div>Państwa:<b> ${activeCountries}</b><small>z danymi w bazie</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">▦</span><div>Firmy:<b> ${all.length}</b><small>rekordów LIVE</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">✣</span><div>Nowe dziś:<b> ${all.filter(x=>{const d=new Date(x.date_added||0);return !Number.isNaN(d)&&new Date().toDateString()===d.toDateString()}).length}</b><small>ostatnie 7 dni: ${new7}</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">↻</span><div>Aktualizacja:<b> ${eu31DateOnly(db.generated_at)}</b><small>${eu31Esc(db.version||'offline')}</small></div></div></div><div class="eu31-search"><span class="mag">⌕</span><input value="${eu31Esc(EU31_STATE.q)}" oninput="eu31InputHandler(this)" placeholder="Szukaj kraju lub firmy..."></div>${eu31Filters()}<div class="eu31-country-grid">${filteredCodes.map(code=>{const c=eu31Counts(code);return `<button class="eu31-country" onclick="eu31Country('${code}',true)">${eu31Flag(code)}<div><h3>${eu31Esc(eu31CountryName(code))}</h3><p>${c.all} kontrahentów</p>${c.new?`<span class="eu31-newtag">NOWE ${c.new}</span>`:''}</div></button>`}).join('')}</div><button class="eu31-recent" onclick="EU31_STATE.q='';EU31_STATE.filter='all';eu31ShowRecent()"><div><strong>NOWI KONTRAHENCI — OSTATNIE 7 DNI</strong><span>${new7} nowych firm w ${new Set(all.filter(eu31IsNew).map(x=>x.country)).size} krajach</span></div><span class="arrow">›</span></button><div class="eu31-syncbar">↻ AUTOMATYCZNA AKTUALIZACJA Z BAZY KONTRAHENTÓW • ${eu31Esc(db.version||'OFFLINE')}</div></div>${eu31Nav()}`;
-  app.appendChild(root);window.scrollTo({top:0,left:0,behavior:'auto'});
+  const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31 eu31-overview-page';
+  root.innerHTML=eu31OverviewShell()+`<div class="eu31-wrap"><div class="eu31-summary"><div class="eu31-stat"><span class="eu31-stat-ico">◎</span><div>Państwa:<b> ${activeCountries}</b><small>z danymi w bazie</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">▦</span><div>Firmy:<b> ${all.length}</b><small>rekordów LIVE</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">✣</span><div>Nowe dziś:<b> ${all.filter(x=>{const d=new Date(x.date_added||0);return !Number.isNaN(d)&&new Date().toDateString()===d.toDateString()}).length}</b><small>ostatnie 7 dni: ${new7}</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">↻</span><div>Aktualizacja:<b> ${eu31DateOnly(db.generated_at)}</b><small>${eu31Esc(db.version||'offline')}</small></div></div></div><div class="eu31-search"><span class="mag">⌕</span><input value="${eu31Esc(EU31_STATE.q)}" oninput="eu31InputHandler(this)" placeholder="Szukaj kraju lub firmy..."></div>${eu31Filters()}<div class="eu31-country-grid">${filteredCodes.map(code=>{const c=eu31Counts(code);return `<button class="eu31-country" onclick="eu31Country('${code}',true)">${eu31Flag(code)}<div><h3>${eu31Esc(eu31CountryName(code))}</h3><p>${c.all} kontrahentów</p>${c.new?`<span class="eu31-newtag">NOWE ${c.new}</span>`:''}</div></button>`}).join('')}</div><button class="eu31-recent" onclick="EU31_STATE.q='';EU31_STATE.filter='all';eu31ShowRecent()"><div><strong>NOWI KONTRAHENCI — OSTATNIE 7 DNI</strong><span>${new7} nowych firm w ${new Set(all.filter(eu31IsNew).map(x=>x.country)).size} krajach</span></div><span class="arrow">›</span></button><div class="eu31-syncbar">↻ AUTOMATYCZNA AKTUALIZACJA Z BAZY KONTRAHENTÓW • ${eu31Esc(db.version||'OFFLINE')}</div></div>${eu31Nav()}`;
+  app.appendChild(root);lmAutoFit(root,941);window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 function eu31Role(x){return x.type==='supplier'?'Dostawca':x.type==='client'?'Klient':'Kontakt';}
 
@@ -2248,16 +2274,19 @@ const EU31_CITY_CRESTS={
 };
 
 function eu31Crest(x){const src=x.crest||EU31_CITY_CRESTS[x.city]||'';const code=(x.crest_text||String(x.city||'?').split(/\s+/).map(z=>z[0]).join('').slice(0,3).toUpperCase());return `<div class="eu31-crest">${src?`<img src="${eu31Esc(src)}" alt="Herb ${eu31Esc(x.city||'miasta')}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`:''}<span>${eu31Esc(code)}</span></div>`;}
-function eu31Company(x){const tag=eu31IsNew(x)?'<span class="eu31-newtag">NOWY</span>':'';return `<div class="eu31-company">${eu31Crest(x)}<div><h3>${eu31Esc(x.company)} ${tag}</h3><div class="eu31-info">⌖ ${eu31Esc(x.city||'—')} &nbsp; | &nbsp; <span class="eu31-role">${x.type==='supplier'?'▣':'♙'} ${eu31Esc(eu31Role(x))}</span></div><div class="eu31-info">◇ ${eu31Esc(x.product||'Pellet / współpraca B2B')}</div></div><div class="eu31-actions"><button class="eu31-action" aria-label="Zadzwoń" onclick="eu31Call('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="svg-fill" d="M15 8l10 15-7 8c6 11 14 19 25 25l8-7 15 10c2 2 2 5 0 7l-6 7c-4 5-11 6-17 3C24 66 7 49-3 30c-3-6-2-13 3-17l7-6c2-2 6-1 8 1z" transform="translate(5 -5) scale(.82)"/></svg></button><button class="eu31-action" aria-label="Mapa" onclick="eu31Map('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="svg-fill" d="M32 5c-12 0-22 9-22 21 0 17 22 34 22 34s22-17 22-34C54 14 44 5 32 5zm0 30a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg></button><button class="eu31-action" aria-label="Szczegóły" onclick="eu31Details('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="svg-fill" cx="12" cy="16" r="4"/><circle class="svg-fill" cx="12" cy="32" r="4"/><circle class="svg-fill" cx="12" cy="48" r="4"/><path class="svg-stroke" d="M24 16h30M24 32h30M24 48h30"/></svg></button></div></div>`;}
+function eu31Company(x){const tag=eu31IsNew(x)?'<span class="eu31-newtag">NOWY</span>':'';return `<div class="eu31-company">${eu31Crest(x)}<div><h3>${eu31Esc(x.company)} ${tag}</h3><div class="eu31-info">⌖ ${eu31Esc(x.city||'—')} &nbsp; | &nbsp; <span class="eu31-role">${x.type==='supplier'?'▣':'♙'} ${eu31Esc(eu31Role(x))}</span></div><div class="eu31-info">◇ ${eu31Esc(x.product||'Pellet / współpraca B2B')}</div></div><div class="eu31-actions"><button class="eu31-action phone" aria-label="Zadzwoń" onclick="eu31Call('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="svg-fill" d="M15 8l10 15-7 8c6 11 14 19 25 25l8-7 15 10c2 2 2 5 0 7l-6 7c-4 5-11 6-17 3C24 66 7 49-3 30c-3-6-2-13 3-17l7-6c2-2 6-1 8 1z" transform="translate(5 -5) scale(.82)"/></svg></button><button class="eu31-action map" aria-label="Mapa" onclick="eu31Map('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><path class="svg-fill" d="M32 5c-12 0-22 9-22 21 0 17 22 34 22 34s22-17 22-34C54 14 44 5 32 5zm0 30a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg></button><button class="eu31-action details" aria-label="CRM / szczegóły" onclick="eu31Details('${eu31Esc(x.id)}')"><svg viewBox="0 0 64 64" aria-hidden="true"><circle class="svg-fill" cx="12" cy="16" r="4"/><circle class="svg-fill" cx="12" cy="32" r="4"/><circle class="svg-fill" cx="12" cy="48" r="4"/><path class="svg-stroke" d="M24 16h30M24 32h30M24 48h30"/></svg></button></div></div>`;}
 function eu31Country(code,reset=true){
-  EU31_STATE.country=code;if(reset){EU31_STATE.q='';EU31_STATE.filter='all'}const c=eu31Counts(code),db=EU31_STATE.db||eu31Fallback(),arr=eu31Filtered(code);const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31';
+  EU31_STATE.country=code;if(reset){EU31_STATE.q='';EU31_STATE.filter='all'}const c=eu31Counts(code),db=EU31_STATE.db||eu31Fallback(),arr=eu31Filtered(code);const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31 eu31-country-page';
   root.innerHTML=eu31Shell('Baza kontrahentów — '+eu31CountryName(code))+`<div class="eu31-wrap"><div class="eu31-country-head"><div>${eu31Flag(code,'big')}</div><div class="counts"><h2>${eu31Esc(eu31CountryName(code).toUpperCase())}</h2><p><i>♙</i>${c.all} kontrahentów</p><p><i>▣</i>${c.sup} dostawców</p><p><i>♙</i>${c.cli} klientów</p></div><div class="eu31-country-meta"><div><span class="ico">✣</span>Nowe dziś: <b>${(db.contractors||[]).filter(x=>x.country===code&&new Date(x.date_added||0).toDateString()===new Date().toDateString()).length}</b></div><div><span class="ico">↻</span>Aktualizacja:<br><b>${eu31DateOnly(db.generated_at)}</b></div></div></div><div class="eu31-search"><span class="mag">⌕</span><input value="${eu31Esc(EU31_STATE.q)}" oninput="eu31InputHandler(this)" placeholder="Szukaj firmy w ${eu31Esc(eu31CountryName(code))}..."></div>${eu31Filters()}<div class="eu31-list">${arr.length?arr.map(eu31Company).join(''):`<div class="eu31-empty"><b>Brak rekordów w tej kategorii</b>Baza jest gotowa do automatycznego uzupełnienia po publikacji kolejnych danych kontrahentów.</div>`}</div><div class="eu31-syncbar">↻ AUTOMATYCZNA AKTUALIZACJA Z BAZY KONTRAHENTÓW</div></div>${eu31Nav()}`;
-  app.appendChild(root);window.scrollTo({top:0,left:0,behavior:'auto'});
+  app.appendChild(root);lmAutoFit(root,941);window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 function eu31ById(id){return (EU31_STATE.db?.contractors||[]).find(x=>String(x.id)===String(id));}
 function eu31Call(id){const x=eu31ById(id);if(!x?.phone)return toast('Brak numeru telefonu — otwórz szczegóły firmy.');location.href='tel:'+String(x.phone).replace(/[^+0-9]/g,'');}
 function eu31Map(id){const x=eu31ById(id);if(!x)return;const q=[x.company,x.address,x.city,eu31CountryName(x.country)].filter(Boolean).join(', ');window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank','noopener');}
-function eu31Details(id){const x=eu31ById(id);if(!x)return;const m=document.createElement('div');m.className='eu31-modal';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="eu31-modal-card"><h2>${eu31Esc(x.company)}</h2><div class="eu31-modal-row"><b>Kraj / miasto:</b> ${eu31Esc(eu31CountryName(x.country))} • ${eu31Esc(x.city||'—')}</div><div class="eu31-modal-row"><b>Typ:</b> ${eu31Esc(eu31Role(x))} • <b>Status:</b> ${eu31Esc(x.status||'—')}</div><div class="eu31-modal-row"><b>Produkt / rynek:</b> ${eu31Esc(x.product||'—')}</div><div class="eu31-modal-row"><b>Adres:</b> ${eu31Esc(x.address||'—')}</div><div class="eu31-modal-row"><b>Telefon:</b> ${eu31Esc(x.phone||'—')}</div><div class="eu31-modal-row"><b>E-mail:</b> ${eu31Esc(x.email||'—')}</div><div class="eu31-modal-row"><b>WWW:</b> ${eu31Esc(x.website||'—')}</div><div class="eu31-modal-row"><b>Źródło:</b> ${eu31Esc(x.source||'—')}</div><div class="eu31-modal-row"><b>Dodano:</b> ${eu31DateOnly(x.date_added)} • <b>aktualizacja:</b> ${eu31DateOnly(x.date_updated)}</div><div class="eu31-modal-row"><b>Notatka:</b> ${eu31Esc(x.note||'—')}</div><div class="eu31-modal-actions"><button class="gold" onclick="eu31Call('${eu31Esc(x.id)}')">☎ ZADZWOŃ</button><button class="gold" onclick="eu31Map('${eu31Esc(x.id)}')">⌖ MAPA DOJAZDU</button>${x.email?`<button onclick="location.href='mailto:${eu31Esc(x.email)}'">✉ E-MAIL</button>`:''}${x.website?`<button onclick="window.open('${eu31Esc(x.website)}','_blank','noopener')">◎ WWW</button>`:''}<button onclick="this.closest('.eu31-modal').remove()">ZAMKNIJ</button></div></div>`;document.body.appendChild(m);}
+function eu31Details(id){
+  if(typeof window.eu32OpenCRM==='function')return window.eu32OpenCRM(id);
+  const x=eu31ById(id);if(!x)return;const m=document.createElement('div');m.className='eu31-modal';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="eu31-modal-card"><h2>${eu31Esc(x.company)}</h2><div class="eu31-modal-row"><b>Kraj / miasto:</b> ${eu31Esc(eu31CountryName(x.country))} • ${eu31Esc(x.city||'—')}</div><div class="eu31-modal-row"><b>Typ:</b> ${eu31Esc(eu31Role(x))} • <b>Status:</b> ${eu31Esc(x.status||'—')}</div><div class="eu31-modal-actions"><button class="gold" onclick="eu31Call('${eu31Esc(x.id)}')">☎ ZADZWOŃ</button><button class="gold" onclick="eu31Map('${eu31Esc(x.id)}')">⌖ MAPA DOJAZDU</button><button onclick="this.closest('.eu31-modal').remove()">ZAMKNIJ</button></div></div>`;document.body.appendChild(m);
+}
 function eu31ShowRecent(){const all=(EU31_STATE.db?.contractors||[]).filter(eu31IsNew);const code=all[0]?.country||'PL';EU31_STATE.country=code;EU31_STATE.q='';EU31_STATE.filter='all';eu31Country(code,false);toast('Pokazuję najnowsze rekordy — użyj wyszukiwarki lub wybierz kraj.');}
 async function renderMarketsEU(){const app=document.getElementById('app');app.innerHTML='<div class="eu31" style="display:flex;align-items:center;justify-content:center;height:100vh;color:#f1b228;font-size:30px">ŁADOWANIE BAZY RYNKI EU…</div>';await eu31Load(true);eu31Home(true);}
 setInterval(()=>{if(EU31_STATE.db)eu31Load(true).then(()=>{if(EU31_STATE.country)eu31Country(EU31_STATE.country,false);});},15*60*1000);
