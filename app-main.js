@@ -37,6 +37,8 @@ function lmAutoFit(root,designWidth=941){
   }
   root.dataset.lmDesignWidth=String(designWidth);
 }
+/* V31.3.2 — RYNKI EU: natywny layout mobilny, bez wymuszonego zoom 941 px. */
+function lmMarketsNativeFit(root){if(!root)return;root.style.zoom='';root.style.width='100%';root.style.minWidth='0';root.style.maxWidth='100%';root.removeAttribute('data-lm-fit-scale');root.removeAttribute('data-lm-design-width');document.documentElement.style.overflowX='hidden';document.body.style.overflowX='hidden';}
 function fmt(n,d=2){return Number(n).toLocaleString('pl-PL',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function money(n){return fmt(n,2)+' zł';}
 function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>e.classList.remove('show'),2200)}
@@ -2229,7 +2231,7 @@ function eu31Flag(code,cls=''){
     <linearGradient id="shine${code}${big?'B':'S'}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".48"/><stop offset=".42" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".24"/></linearGradient>
     <filter id="wave${code}${big?'B':'S'}" x="-10%" y="-15%" width="120%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.035" numOctaves="1" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="${big?7:4}" xChannelSelector="R" yChannelSelector="G"/></filter>
   </defs>
-  <g filter="url(#wave${code}${big?'B':'S'})">${inner}<rect width="120" height="84" fill="url(#shine${code}${big?'B':'S'})"/></g>
+  <clipPath id="clip${code}${big?'B':'S'}"><path d="M0 5 C18 0 35 9 53 5 C72 1 91 10 120 5 L120 79 C98 74 80 84 61 79 C42 75 22 85 0 79 Z"/></clipPath><g clip-path="url(#clip${code}${big?'B':'S'})" filter="url(#wave${code}${big?'B':'S'})">${inner}<rect width="120" height="84" fill="url(#shine${code}${big?'B':'S'})"/></g>
   </svg></div>`;
 }
 function eu31Fallback(){return {version:'offline',generated_at:null,contractors:[],countries:EU31_COUNTRY_ORDER};}
@@ -2259,7 +2261,7 @@ function eu31Home(render=true){
   const all=db.contractors||[], new7=all.filter(eu31IsNew).length, activeCountries=new Set(all.map(x=>x.country)).size;
   const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31 eu31-overview-page';
   root.innerHTML=eu31OverviewShell()+`<div class="eu31-wrap"><div class="eu31-summary"><div class="eu31-stat"><span class="eu31-stat-ico">◎</span><div>Państwa:<b> ${activeCountries}</b><small>z danymi w bazie</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">▦</span><div>Firmy:<b> ${all.length}</b><small>rekordów LIVE</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">✣</span><div>Nowe dziś:<b> ${all.filter(x=>{const d=new Date(x.date_added||0);return !Number.isNaN(d)&&new Date().toDateString()===d.toDateString()}).length}</b><small>ostatnie 7 dni: ${new7}</small></div></div><div class="eu31-stat"><span class="eu31-stat-ico">↻</span><div>Aktualizacja:<b> ${eu31DateOnly(db.generated_at)}</b><small>${eu31Esc(db.version||'offline')}</small></div></div></div><div class="eu31-search"><span class="mag">⌕</span><input value="${eu31Esc(EU31_STATE.q)}" oninput="eu31InputHandler(this)" placeholder="Szukaj kraju lub firmy..."></div>${eu31Filters()}<div class="eu31-country-grid">${filteredCodes.map(code=>{const c=eu31Counts(code);return `<button class="eu31-country" onclick="eu31Country('${code}',true)">${eu31Flag(code)}<div><h3>${eu31Esc(eu31CountryName(code))}</h3><p>${c.all} kontrahentów</p>${c.new?`<span class="eu31-newtag">NOWE ${c.new}</span>`:''}</div></button>`}).join('')}</div><button class="eu31-recent" onclick="EU31_STATE.q='';EU31_STATE.filter='all';eu31ShowRecent()"><div><strong>NOWI KONTRAHENCI — OSTATNIE 7 DNI</strong><span>${new7} nowych firm w ${new Set(all.filter(eu31IsNew).map(x=>x.country)).size} krajach</span></div><span class="arrow">›</span></button><div class="eu31-syncbar">↻ AUTOMATYCZNA AKTUALIZACJA Z BAZY KONTRAHENTÓW • ${eu31Esc(db.version||'OFFLINE')}</div></div>${eu31Nav()}`;
-  app.appendChild(root);lmAutoFit(root,941);window.scrollTo({top:0,left:0,behavior:'auto'});
+  app.appendChild(root);lmMarketsNativeFit(root);window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 function eu31Role(x){return x.type==='supplier'?'Dostawca':x.type==='client'?'Klient':'Kontakt';}
 
@@ -2278,7 +2280,7 @@ function eu31Company(x){const tag=eu31IsNew(x)?'<span class="eu31-newtag">NOWY</
 function eu31Country(code,reset=true){
   EU31_STATE.country=code;if(reset){EU31_STATE.q='';EU31_STATE.filter='all'}const c=eu31Counts(code),db=EU31_STATE.db||eu31Fallback(),arr=eu31Filtered(code);const app=document.getElementById('app');app.innerHTML='';const root=document.createElement('div');root.className='eu31 eu31-country-page';
   root.innerHTML=eu31Shell('Baza kontrahentów — '+eu31CountryName(code))+`<div class="eu31-wrap"><div class="eu31-country-head"><div>${eu31Flag(code,'big')}</div><div class="counts"><h2>${eu31Esc(eu31CountryName(code).toUpperCase())}</h2><p><i>♙</i>${c.all} kontrahentów</p><p><i>▣</i>${c.sup} dostawców</p><p><i>♙</i>${c.cli} klientów</p></div><div class="eu31-country-meta"><div><span class="ico">✣</span>Nowe dziś: <b>${(db.contractors||[]).filter(x=>x.country===code&&new Date(x.date_added||0).toDateString()===new Date().toDateString()).length}</b></div><div><span class="ico">↻</span>Aktualizacja:<br><b>${eu31DateOnly(db.generated_at)}</b></div></div></div><div class="eu31-search"><span class="mag">⌕</span><input value="${eu31Esc(EU31_STATE.q)}" oninput="eu31InputHandler(this)" placeholder="Szukaj firmy w ${eu31Esc(eu31CountryName(code))}..."></div>${eu31Filters()}<div class="eu31-list">${arr.length?arr.map(eu31Company).join(''):`<div class="eu31-empty"><b>Brak rekordów w tej kategorii</b>Baza jest gotowa do automatycznego uzupełnienia po publikacji kolejnych danych kontrahentów.</div>`}</div><div class="eu31-syncbar">↻ AUTOMATYCZNA AKTUALIZACJA Z BAZY KONTRAHENTÓW</div></div>${eu31Nav()}`;
-  app.appendChild(root);lmAutoFit(root,941);window.scrollTo({top:0,left:0,behavior:'auto'});
+  app.appendChild(root);lmMarketsNativeFit(root);window.scrollTo({top:0,left:0,behavior:'auto'});
 }
 function eu31ById(id){return (EU31_STATE.db?.contractors||[]).find(x=>String(x.id)===String(id));}
 function eu31Call(id){const x=eu31ById(id);if(!x?.phone)return toast('Brak numeru telefonu — otwórz szczegóły firmy.');location.href='tel:'+String(x.phone).replace(/[^+0-9]/g,'');}

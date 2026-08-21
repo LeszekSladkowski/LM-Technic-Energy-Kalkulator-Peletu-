@@ -1,5 +1,5 @@
 {
-  "version": "V31.3.0",
-  "build": "2026-08-21T11:20:00+02:00",
-  "notes": "RYNKI EU MASTER FIX: automatyczne dopasowanie Pulpitu i kart Rynki EU do szerokości telefonu bez ręcznego zoomowania; przywrócony pełny przepływ Karta 1 → Karta 2 kraju → Karta 3 CRM; karta 1 ma 12 państw i falujące flagi ze złotym masztem; karta 2 ma zielony telefon, niebieską mapę i mocno pomarańczowe Orange menu; karta 3 CRM ma flagę kraju, te same kolory akcji oraz domyślnie ukryty jasny panel danych RODO otwierany wyłącznie białym przyciskiem przy nazwie firmy."
+  "version": "V31.3.2",
+  "build": "2026-08-21T12:15:00+02:00",
+  "notes": "FINAL MASTER RYNKI EU 1/2/3: exact approved reference images frozen in assets; native mobile layout without 941px zoom; card 1 full-height 12 waving flags; card 2 MASTER with green phone, blue map, Orange menu and CRM transition; card 3 MASTER with country flag, 4 filters, privacy white i button, RODO hidden by default, 3-color actions, assistant messages."
 }
